@@ -36,8 +36,27 @@ Créer une application web professionnelle pour un prestataire indépendant, reg
 - [x] **CRUD** : Liste dynamique, recherche et création de nouveaux clients.
 - [x] **Typage** : Modèle de données Prisma structuré (Nom, Email, Phone, Adresse).
 
+### Guide de Configuration Supabase (Indispensable pour Vercel)
+
+Pour éviter les erreurs de connexion ("Connection Limit Reached" ou "PgBouncer error"), voici la marche à suivre :
+
+1.  **Créer un projet sur Supabase.com**.
+2.  Dans **Project Settings > Database**, récupérer l'**URL de connexion**.
+3.  Utiliser le **port 6543** et ajouter le flag `?pgbouncer=true` pour la variable `DATABASE_URL` (Utilisée par l'application sur Vercel/Next.js).
+4.  Utiliser le **port 5432** sans flag pour la variable `DIRECT_URL` (Utilisée par Prisma CLI pour les migrations).
+
+### État de la Migration Supabase (Prête)
+- [x] **Drivers PostgreSQL** : Installés (`pg`, `@prisma/adapter-pg`).
+- [x] **Adaptateur Prisma 7** : Configuré dans `src/lib/db.ts`.
+- [x] **Schéma** : Converti en `postgresql`.
+- [ ] **Secret Management** : Remplir `.env` avec vos vrais accès Supabase.
+- [ ] **Déploiement Initial** : Lancer `npx prisma db push` une fois les accès configurés.
+
 ### Prochaines Étapes
 - [ ] Finalisation des exports PDF/Print pour les devis.
 - [ ] Amélioration de la transcription vocale réelle pour les schémas.
 - [ ] Optimisation des performances pour le déploiement Vercel.
 - [ ] Dashboard : Statistiques réelles basées sur la base de données.
+
+> [!TIP]
+> Si vous avez un doute lors de la création du projet Supabase, je peux vous guider étape par étape. L'application est actuellement configurée pour détecter automatiquement la transition SQLite -> PostgreSQL dès que vous renseignez les accès.
