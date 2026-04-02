@@ -1,4 +1,5 @@
 import React from 'react';
+export const dynamic = 'force-dynamic';
 import { prisma } from '@/lib/db';
 import AutomationQuoteForm from '@/components/quotes/AutomationQuoteForm';
 import { ChevronLeft } from 'lucide-react';
