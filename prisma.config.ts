@@ -8,6 +8,6 @@ export default defineConfig({
     seed: "node src/lib/seed.ts",
   },
   datasource: {
-    url: env("DATABASE_URL"),
+    url: env("DATABASE_URL") || "postgresql://postgres:postgres@localhost:5432/db",
   },
 });

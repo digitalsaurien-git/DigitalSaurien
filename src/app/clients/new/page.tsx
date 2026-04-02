@@ -93,28 +93,6 @@ export default function NewClientPage() {
         </div>
       </form>
 
-      <style jsx>{`
-        .label {
-          display: block;
-          font-size: 0.825rem;
-          font-weight: 500;
-          color: var(--text-muted);
-          margin-bottom: 8px;
-        }
-        .input-with-icon {
-          position: relative;
-          display: flex;
-          align-items: center;
-        }
-        .input-with-icon .icon {
-          position: absolute;
-          left: 12px;
-          color: var(--text-muted);
-        }
-        .input-with-icon .input {
-          padding-left: 40px;
-        }
-      `}</style>
     </div>
   );
 }

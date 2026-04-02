@@ -92,11 +92,6 @@ export default async function ClientsPage() {
         </table>
       </div>
 
-      <style jsx>{`
-        .table-row-hover:hover {
-          background-color: #f8fafc;
-        }
-      `}</style>
     </div>
   );
 }

@@ -185,15 +185,6 @@ export default function DeliveryQuoteForm({ clients, defaultSettings }: Delivery
         </div>
       </div>
 
-      <style jsx>{`
-        .label {
-          display: block;
-          font-size: 0.825rem;
-          font-weight: 500;
-          color: var(--text-muted);
-          margin-bottom: 6px;
-        }
-      `}</style>
     </div>
   );
 }

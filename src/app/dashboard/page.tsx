@@ -159,37 +159,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <style jsx>{`
-        .stat-card {
-          padding: var(--spacing-md) var(--spacing-lg);
-        }
-        .stat-header {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 8px;
-        }
-        .stat-label {
-          font-size: 0.75rem;
-          color: var(--text-muted);
-          font-weight: 500;
-        }
-        .stat-value {
-          font-size: 1.5rem;
-          font-weight: 700;
-          color: var(--primary);
-        }
-        .stat-trend {
-          font-size: 0.7rem;
-          color: var(--text-muted);
-          margin-top: 4px;
-        }
-        .stat-trend.success { color: var(--success); }
-        .interactive:hover {
-          background: rgba(59, 130, 246, 0.05) !important;
-          transform: translateY(-2px);
-          transition: all 0.2s ease;
-        }
-      `}</style>
     </div>
   );
 }

@@ -209,15 +209,6 @@ export default function AutomationQuoteForm({ clients, defaultSettings }: Automa
         </div>
       </div>
 
-      <style jsx>{`
-        .label {
-          display: block;
-          font-size: 0.825rem;
-          font-weight: 500;
-          color: var(--text-muted);
-          margin-bottom: 6px;
-        }
-      `}</style>
     </div>
   );
 }

@@ -123,34 +123,6 @@ export default async function HistoryPage() {
         )}
       </div>
 
-      <style jsx>{`
-        .tab-btn {
-          background: none;
-          border: none;
-          padding: 8px 12px;
-          font-size: 0.875rem;
-          font-weight: 500;
-          color: var(--text-muted);
-          cursor: pointer;
-        }
-        .tab-btn.active {
-          color: var(--accent);
-          font-weight: 600;
-        }
-        .history-item:hover {
-          background: #fcfcfc;
-          border-color: var(--accent);
-          transition: border-color 0.2s ease;
-        }
-        .btn-icon {
-          background: none;
-          border: none;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-      `}</style>
     </div>
   );
 }

@@ -135,32 +135,6 @@ export default async function SettingsPage() {
         </div>
       </form>
 
-      <style jsx>{`
-        .label {
-          display: block;
-          font-size: 0.825rem;
-          font-weight: 500;
-          color: var(--text-muted);
-          margin-bottom: 6px;
-        }
-        .hint {
-          font-size: 0.7rem;
-          color: var(--text-muted);
-          margin-top: 4px;
-        }
-        .coeff-item {
-          background: var(--background);
-          padding: 12px;
-          border-radius: 8px;
-          text-align: center;
-        }
-        .coeff-value {
-          font-size: 1.25rem;
-          font-weight: 700;
-          color: var(--primary);
-          margin-top: 4px;
-        }
-      `}</style>
     </div>
   );
 }
