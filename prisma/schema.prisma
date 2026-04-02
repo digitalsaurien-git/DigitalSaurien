@@ -1,0 +1,136 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Client {
+  id        String   @id @default(uuid())
+  name      String
+  email     String?
+  phone     String?
+  address   String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  quotes    Quote[]
+}
+
+model Vehicle {
+  id             String   @id @default(uuid())
+  name           String
+  consumption    Float    // Litres/100km
+  fuelPriceTag   Float    // Default fuel price
+  wearCostPerKm  Float    // Usure par km
+  age            Int?     // Ancienneté
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model PricingSettings {
+  id                     String   @id @default(uuid())
+  hourlyRate             Float    @default(50.0)
+  travelHourlyRate       Float    @default(30.0)
+  hardshipThreshold      Float    @default(8.0) // Heures
+  hardshipSurcharge      Float    @default(1.2) // Coefficient
+  fuelPriceDefault       Float    @default(1.8)
+  complexityCoeffs       String   // JSON string of coeffs
+  multiToolCoeffs       String   // JSON string of coeffs
+  multiIACoeffs         String   // JSON string of coeffs
+  riskCoeffs             String   // JSON string of coeffs
+  accountCreationCost    Float    @default(50.0)
+  subscriptionSetupCost  Float    @default(30.0)
+  updatedAt              DateTime @updatedAt
+}
+
+model SoftwareSubscription {
+  id          String   @id @default(uuid())
+  name        String
+  monthlyCost Float
+  category    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ServicePack {
+  id          String   @id @default(uuid())
+  name        String
+  hours       Float
+  price       Float
+  discount    Float    // Percentage
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Quote {
+  id                String   @id @default(uuid())
+  title             String
+  type              String   // DELIVERY or AUTOMATION
+  status            String   @default("DRAFT") // DRAFT, SENT, PAID, CANCELLED
+  totalAmount       Float
+  subtotalAmount    Float
+  adjustmentsAmount Float    @default(0.0)
+  adjustmentNote    String?
+  calculationDetail String?  // JSON string of the breakdown
+  clientId          String
+  client            Client   @relation(fields: [clientId], references: [id])
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations for specific types
+  deliveryEstimate   DeliveryEstimate?
+  automationEstimate AutomationEstimate?
+}
+
+model DeliveryEstimate {
+  id              String   @id @default(uuid())
+  quoteId         String   @unique
+  quote           Quote    @relation(fields: [quoteId], references: [id])
+  origin          String
+  destination     String
+  distance        Float
+  duration        Float
+  tripType        String?  // ALLER, ALLER_RETOUR
+  roadType        String?  // NATIONAL, HIGHWAY
+  tolls           Float    @default(0.0)
+  vehicleId       String?
+  fuelPrice       Float?
+  animalCount     Int      @default(1)
+  animalType      String?
+  constraints     String?
+}
+
+model AutomationEstimate {
+  id                String   @id @default(uuid())
+  quoteId           String   @unique
+  quote             Quote    @relation(fields: [quoteId], references: [id])
+  baseHours         Float
+  complexity        Float    @default(1.0)
+  toolCount         Int      @default(1)
+  iaCount           Int      @default(0)
+  accountCount      Int      @default(0)
+  subscriptionCount Int      @default(0)
+  isLocalInstall    Boolean  @default(false)
+  isCloudInstall    Boolean  @default(true)
+  hasDatabase       Boolean  @default(false)
+  hasMaintenance    Boolean  @default(false)
+  hasDocumentation  Boolean  @default(false)
+  hasTraining       Boolean  @default(false)
+}
+
+model Diagram {
+  id                String   @id @default(uuid())
+  title             String
+  description       String?
+  sourceText        String
+  transcriptionText String?
+  interpretedLogic  String?  // JSON or intermediate structure
+  mermaidCode       String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
