@@ -3,24 +3,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import mermaid from 'mermaid';
 
-mermaid.initialize({
-  startOnLoad: true,
-  theme: 'base',
-  themeVariables: {
-    primaryColor: '#3b82f6',
-    primaryTextColor: '#fff',
-    primaryBorderColor: '#1e3a8a',
-    lineColor: '#64748b',
-    secondaryColor: '#f8fafc',
-    tertiaryColor: '#f1f5f9',
-  },
-  flowchart: {
-    useMaxWidth: true,
-    htmlLabels: true,
-    curve: 'basis',
-  },
-});
-
 interface MermaidRendererProps {
   chart: string;
 }
@@ -31,6 +13,27 @@ export default function MermaidRenderer({ chart }: MermaidRendererProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Only initialize and render on client
+    if (typeof window !== 'undefined') {
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: 'base',
+        themeVariables: {
+          primaryColor: '#3b82f6',
+          primaryTextColor: '#fff',
+          primaryBorderColor: '#1e3a8a',
+          lineColor: '#64748b',
+          secondaryColor: '#f8fafc',
+          tertiaryColor: '#f1f5f9',
+        },
+        flowchart: {
+          useMaxWidth: true,
+          htmlLabels: true,
+          curve: 'basis',
+        },
+      });
+    }
+
     const render = async () => {
       if (!chart) return;
       try {
