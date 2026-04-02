@@ -1,4 +1,5 @@
 import React from 'react';
+export const dynamic = 'force-dynamic';
 import { prisma } from '@/lib/db';
 import { Plus, Search, User, Mail, Phone, MapPin, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
