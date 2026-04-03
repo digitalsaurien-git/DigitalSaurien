@@ -52,21 +52,39 @@ async function getSettings() {
 async function updateSettings(formData: FormData) {
   'use server';
   
-  const id = formData.get('id') as string;
-  const hourlyRate = parseFloat(formData.get('hourlyRate') as string);
-  const travelHourlyRate = parseFloat(formData.get('travelHourlyRate') as string);
-  const fuelPriceDefault = parseFloat(formData.get('fuelPriceDefault') as string);
+  try {
+    const id = formData.get('id') as string;
+    const hourlyRate = parseFloat(formData.get('hourlyRate') as string);
+    const travelHourlyRate = parseFloat(formData.get('travelHourlyRate') as string);
+    const fuelPriceDefault = parseFloat(formData.get('fuelPriceDefault') as string);
 
-  await prisma.pricingSettings.update({
-    where: { id },
-    data: {
-      hourlyRate,
-      travelHourlyRate,
-      fuelPriceDefault
+    if (id === 'fallback') {
+      await prisma.pricingSettings.create({
+        data: {
+          hourlyRate,
+          travelHourlyRate,
+          fuelPriceDefault,
+          complexityCoeffs: JSON.stringify({ basic: 1, medium: 1.3, high: 1.8 }),
+          multiToolCoeffs: JSON.stringify({ base: 1.1 }),
+          multiIACoeffs: JSON.stringify({ base: 1.25 }),
+          riskCoeffs: JSON.stringify({ low: 1, med: 1.2, high: 1.5 }),
+        }
+      });
+    } else {
+      await prisma.pricingSettings.update({
+        where: { id },
+        data: {
+          hourlyRate,
+          travelHourlyRate,
+          fuelPriceDefault
+        }
+      });
     }
-  });
 
-  revalidatePath('/settings');
+    revalidatePath('/settings');
+  } catch (error) {
+    console.error("❌ [Prisma] Erreur lors de la mise à jour des paramètres:", error);
+  }
 }
 
 export default async function SettingsPage() {

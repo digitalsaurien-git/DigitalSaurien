@@ -38,7 +38,11 @@ export default function DeliveryQuoteForm({ clients, defaultSettings }: Delivery
     animalCount: 1,
     isHardship: false,
     hardshipSurcharge: 1.2,
+    animalCount: 1,
+    isHardship: false,
+    hardshipSurcharge: 1.2,
     minForfait: 80,
+    vehicleKm: 0,
   });
 
   const [result, setResult] = useState<DeliveryQuoteResult | null>(null);
@@ -65,14 +69,26 @@ export default function DeliveryQuoteForm({ clients, defaultSettings }: Delivery
       parsedValue = value;
     }
     
-    setFormData(prev => ({
-      ...prev,
-      [name]: parsedValue
-    }));
+    if (name === 'vehicleKm') {
+      const km = parsedValue;
+      // Pour chaque 5000 km, on rajoute 0.15€ (selon instruction utilisateur)
+      const wear = 0.15 + (Math.floor(km / 5000) * 0.15);
+      setFormData(prev => ({
+        ...prev,
+        vehicleKm: km,
+        wearCostPerKm: parseFloat(wear.toFixed(2))
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: parsedValue
+      }));
+    }
   };
 
   return (
-    <div className="quote-form-layout" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 'var(--spacing-xl)', alignItems: 'start' }}>
+    <div className="container-center animate-in">
+      <div className="quote-form-layout" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 'var(--spacing-xl)', alignItems: 'start', marginTop: 'var(--spacing-lg)' }}>
       {/* Inputs Area */}
       <div className="inputs-section">
         <div className="card shadow-glass" style={{ marginBottom: 'var(--spacing-lg)', borderTop: '4px solid var(--accent)' }}>
@@ -102,47 +118,49 @@ export default function DeliveryQuoteForm({ clients, defaultSettings }: Delivery
 
             <div className="form-field">
               <label className="label-modern">Lieu de prise en charge</label>
-              <div style={{ position: 'relative' }}>
-                <MapPin size={16} style={{ position: 'absolute', right: '14px', top: '14px', color: '#10b981', opacity: 0.6 }} />
-                <input type="text" name="origin" className="input-modern" placeholder="Ville ou CP" onChange={handleChange} />
+              <div style={{ position: 'relative', marginTop: '8px' }}>
+                <MapPin size={16} style={{ position: 'absolute', left: '14px', top: '14px', color: '#10b981', opacity: 0.6 }} />
+                <input type="text" name="origin" className="input-modern" placeholder="Ville ou CP" onChange={handleChange} style={{ paddingLeft: '40px' }} />
               </div>
             </div>
             
             <div className="form-field">
               <label className="label-modern">Lieu de livraison</label>
-              <div style={{ position: 'relative' }}>
-                <MapPin size={16} style={{ position: 'absolute', right: '14px', top: '14px', color: '#ef4444', opacity: 0.6 }} />
-                <input type="text" name="destination" className="input-modern" placeholder="Ville ou CP" onChange={handleChange} />
+              <div style={{ position: 'relative', marginTop: '8px' }}>
+                <MapPin size={16} style={{ position: 'absolute', left: '14px', top: '14px', color: '#ef4444', opacity: 0.6 }} />
+                <input type="text" name="destination" className="input-modern" placeholder="Ville ou CP" onChange={handleChange} style={{ paddingLeft: '40px' }} />
               </div>
             </div>
 
             <div className="form-field">
               <label className="label-modern">Distance réelle (km)</label>
-              <input type="number" name="distance" value={formData.distance === 0 ? '' : formData.distance} onChange={handleChange} className="input-modern" placeholder="0" min="0" />
+              <div style={{ marginTop: '8px' }}>
+                <input type="number" name="distance" value={formData.distance === 0 ? '' : formData.distance} onChange={handleChange} className="input-modern" placeholder="0" min="0" />
+              </div>
             </div>
 
             <div className="form-field">
               <label className="label-modern">Temps de trajet (h)</label>
-              <div style={{ position: 'relative' }}>
-                <Clock size={16} style={{ position: 'absolute', right: '14px', top: '14px', color: 'var(--text-muted)', opacity: 0.5 }} />
-                <input type="number" name="duration" value={formData.duration === 0 ? '' : formData.duration} onChange={handleChange} className="input-modern" placeholder="0" min="0" step="0.5" />
+              <div style={{ position: 'relative', marginTop: '8px' }}>
+                <Clock size={16} style={{ position: 'absolute', left: '14px', top: '14px', color: 'var(--text-muted)', opacity: 0.5 }} />
+                <input type="number" name="duration" value={formData.duration === 0 ? '' : formData.duration} onChange={handleChange} className="input-modern" placeholder="0" min="0" step="0.5" style={{ paddingLeft: '40px' }} />
               </div>
             </div>
 
             <div className="form-field">
               <label className="label-modern">Estimatif Péages (€)</label>
-              <div style={{ position: 'relative' }}>
-                <DollarSign size={16} style={{ position: 'absolute', right: '14px', top: '14px', color: 'var(--text-muted)', opacity: 0.5 }} />
-                <input type="number" name="tolls" value={formData.tolls === 0 ? '' : formData.tolls} onChange={handleChange} className="input-modern" placeholder="0" min="0" />
+              <div style={{ position: 'relative', marginTop: '8px' }}>
+                <DollarSign size={16} style={{ position: 'absolute', left: '14px', top: '14px', color: 'var(--text-muted)', opacity: 0.5 }} />
+                <input type="number" name="tolls" value={formData.tolls === 0 ? '' : formData.tolls} onChange={handleChange} className="input-modern" placeholder="0" min="0" style={{ paddingLeft: '40px' }} />
               </div>
             </div>
 
-            <div className="checkbox-field" style={{ background: formData.isHardship ? 'rgba(59, 130, 246, 0.05)' : 'transparent', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', transition: 'all 0.2s', alignSelf: 'end', marginBottom: '5px' }}>
+            <div className="checkbox-field" style={{ background: formData.isHardship ? 'rgba(59, 130, 246, 0.05)' : 'transparent', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)', transition: 'all 0.2s', alignSelf: 'end', marginTop: '8px' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
                 <input type="checkbox" name="isHardship" checked={formData.isHardship} onChange={handleChange} className="checkbox-modern" />
                 <div>
-                   <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>Pénibilité (Nuit/WE/Férié)</div>
-                   <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Applique une majoration de {formData.hardshipSurcharge}x</div>
+                   <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Majoration Pénibilité</div>
+                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Nuit / Week-end / Férié ({formData.hardshipSurcharge}x)</div>
                 </div>
               </label>
             </div>
@@ -150,25 +168,33 @@ export default function DeliveryQuoteForm({ clients, defaultSettings }: Delivery
         </div>
 
         <div className="card shadow-glass">
-          <div className="card-header" style={{ marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Fuel size={18} color="var(--primary)" />
-              Paramètres Véhicule & Carburant
-            </h3>
+          <div className="card-header" style={{ marginBottom: '20px', display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <Fuel size={20} color="var(--primary)" />
+            <h3 style={{ fontSize: '1rem', fontWeight: 600, margin: 0 }}>Gestion du Véhicule</h3>
           </div>
-          <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--spacing-xl)' }}>
+          
+          <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--spacing-md)', marginBottom: '20px' }}>
             <div className="form-field">
-              <label className="label-modern">Conso (L/100km)</label>
-              <input type="number" step="0.1" name="fuelConsumption" value={formData.fuelConsumption} onChange={handleChange} className="input-modern" style={{ background: '#f8fafc' }} />
+              <label className="label-modern">Km Véhicule</label>
+              <input type="number" name="vehicleKm" value={formData.vehicleKm === 0 ? '' : formData.vehicleKm} onChange={handleChange} className="input-modern" placeholder="Ex: 130000" style={{ background: '#f0f9ff', border: '2px solid #bae6fd' }} />
             </div>
             <div className="form-field">
-              <label className="label-modern">Prix carburant (€)</label>
-              <input type="number" step="0.01" name="fuelPrice" value={formData.fuelPrice} onChange={handleChange} className="input-modern" style={{ background: '#f8fafc' }} />
+              <label className="label-modern">Conso (L/100)</label>
+              <input type="number" step="0.1" name="fuelConsumption" value={formData.fuelConsumption} onChange={handleChange} className="input-modern" />
+            </div>
+            <div className="form-field">
+              <label className="label-modern">Carburant (€)</label>
+              <input type="number" step="0.01" name="fuelPrice" value={formData.fuelPrice} onChange={handleChange} className="input-modern" />
             </div>
             <div className="form-field">
               <label className="label-modern">Usure/km (€)</label>
-              <input type="number" step="0.01" name="wearCostPerKm" value={formData.wearCostPerKm} onChange={handleChange} className="input-modern" style={{ background: '#f8fafc' }} />
+              <input type="number" step="0.01" name="wearCostPerKm" readonly value={formData.wearCostPerKm} className="input-modern" style={{ background: '#f1f5f9', cursor: 'not-allowed' }} />
             </div>
+          </div>
+
+          <div className="info-modern-box animate-in" style={{ fontSize: '0.75rem' }}>
+            <strong>Calcul d'usure :</strong> La base est de 0.15€/km. Chaque tranche de 5 000 km rajoute 0.15€/km au tarif. 
+            Actuellement : <strong>{formData.wearCostPerKm}€/km</strong> pour {formData.vehicleKm} km.
           </div>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 export const dynamic = 'force-dynamic';
 import { 
   PlusCircle, 
@@ -55,29 +56,29 @@ export default function Dashboard() {
         <h2 style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Actions rapides</h2>
       </div>
       <div className="actions-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--spacing-lg)', marginBottom: 'var(--spacing-xl)' }}>
-        <div className="card action-card interactive" style={{ cursor: 'pointer', border: '1px dashed var(--accent)', background: 'rgba(59, 130, 246, 0.02)' }}>
+        <Link href="/quotes/delivery/new" className="card action-card interactive" style={{ textDecoration: 'none', cursor: 'pointer', border: '1px dashed var(--accent)', background: 'rgba(59, 130, 246, 0.02)' }}>
           <div className="action-icon" style={{ background: 'var(--accent)', color: 'white', width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
             <Truck size={20} />
           </div>
-          <h3 style={{ fontSize: '0.925rem', marginBottom: '4px' }}>Nouveau devis Livraison</h3>
+          <h3 style={{ fontSize: '0.925rem', marginBottom: '4px', color: 'var(--text)' }}>Nouveau devis Livraison</h3>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Chiffrer un trajet d'animaux</p>
-        </div>
+        </Link>
         
-        <div className="card action-card interactive" style={{ cursor: 'pointer', border: '1px dashed var(--accent)', background: 'rgba(59, 130, 246, 0.02)' }}>
+        <Link href="/quotes/automation/new" className="card action-card interactive" style={{ textDecoration: 'none', cursor: 'pointer', border: '1px dashed var(--accent)', background: 'rgba(59, 130, 246, 0.02)' }}>
           <div className="action-icon" style={{ background: '#7c3aed', color: 'white', width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
             <Zap size={20} />
           </div>
-          <h3 style={{ fontSize: '0.925rem', marginBottom: '4px' }}>Nouveau devis Automation</h3>
+          <h3 style={{ fontSize: '0.925rem', marginBottom: '4px', color: 'var(--text)' }}>Nouveau devis Automation</h3>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Projet digital ou IA</p>
-        </div>
+        </Link>
 
-        <div className="card action-card interactive" style={{ cursor: 'pointer', border: '1px dashed var(--accent)', background: 'rgba(59, 130, 246, 0.02)' }}>
+        <Link href="/diagrams/new" className="card action-card interactive" style={{ textDecoration: 'none', cursor: 'pointer', border: '1px dashed var(--accent)', background: 'rgba(59, 130, 246, 0.02)' }}>
           <div className="action-icon" style={{ background: '#0f172a', color: 'white', width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
             <GitBranch size={20} />
           </div>
-          <h3 style={{ fontSize: '0.925rem', marginBottom: '4px' }}>Nouveau schéma</h3>
+          <h3 style={{ fontSize: '0.925rem', marginBottom: '4px', color: 'var(--text)' }}>Nouveau schéma</h3>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Convertir texte en diagramme</p>
-        </div>
+        </Link>
       </div>
 
       {/* Recent Activity / Mixed Lists Area */}
