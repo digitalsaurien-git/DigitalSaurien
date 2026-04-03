@@ -6,11 +6,6 @@ import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 
 async function getData() {
-  const [clients, settings] = await Promise.all([
-    prisma.client.findMany({ orderBy: { name: 'asc' } }),
-    prisma.pricingSettings.findFirst()
-  ]);
-  
   const defaultPricing = {
     hourlyRate: 60.0,
     travelHourlyRate: 35.0,
@@ -25,10 +20,20 @@ async function getData() {
     subscriptionSetupCost: 30.0,
   };
 
-  return { 
-    clients, 
-    settings: settings || defaultPricing 
-  };
+  try {
+    const [clients, settings] = await Promise.all([
+      prisma.client.findMany({ orderBy: { name: 'asc' } }),
+      prisma.pricingSettings.findFirst()
+    ]);
+    
+    return { 
+      clients: clients || [], 
+      settings: settings || defaultPricing 
+    };
+  } catch (error) {
+    console.warn("DB not ready (PricingSettings), using fallback defaults.", error);
+    return { clients: [], settings: defaultPricing };
+  }
 }
 
 export default async function NewDeliveryQuotePage() {
