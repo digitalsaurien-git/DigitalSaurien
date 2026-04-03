@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Cloud, CloudUpload, CloudDownload, CheckCircle, AlertCircle, Loader } from 'lucide-react';
+import { Cloud, Upload, Download, CheckCircle, AlertCircle, Loader } from 'lucide-react';
 import { initGoogleDrive, authenticateGoogle, saveToDrive, loadFromDrive } from '@/utils/googleDrive';
 
 const KEYS = [
@@ -136,7 +136,7 @@ export function SyncControls() {
                 opacity: isLoading ? 0.6 : 1, transition: 'all 0.2s'
               }}
             >
-              {isLoading ? <Loader size={16} /> : <CloudUpload size={16} />}
+              {isLoading ? <Loader size={16} /> : <Upload size={16} />}
               Sauvegarder vers Drive
             </button>
 
@@ -150,7 +150,7 @@ export function SyncControls() {
                 fontSize: '0.9rem', opacity: isLoading ? 0.6 : 1, transition: 'all 0.2s'
               }}
             >
-              <CloudDownload size={16} />
+              <Download size={16} />
               Restaurer depuis Drive
             </button>
           </>
