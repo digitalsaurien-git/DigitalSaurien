@@ -1,129 +1,215 @@
-import React from 'react';
-export const dynamic = 'force-dynamic';
-import { prisma } from '@/lib/db';
-import { 
-  History, 
-  Search, 
-  Filter, 
-  Truck, 
-  Zap, 
-  GitBranch, 
-  FileText,
-  ChevronRight,
-  MoreVertical,
-  Download,
-  Copy
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import {
+  History, Search, Filter, Truck, Zap, GitBranch,
+  ChevronRight, MoreVertical, Trash2
 } from 'lucide-react';
-import Link from 'next/link';
 
-async function getHistory() {
-  const [quotes, diagrams] = await Promise.all([
-    prisma.quote.findMany({
-      include: { client: true },
-      orderBy: { createdAt: 'desc' }
-    }),
-    prisma.diagram.findMany({
-      orderBy: { createdAt: 'desc' }
-    })
-  ]);
-  
-  return { quotes, diagrams };
-}
+const QUOTES_KEY = 'digitalsaurien_quotes';
+const DIAGRAMS_KEY = 'digitalsaurien_diagrams';
+const CLIENTS_KEY = 'digitalsaurien_clients';
 
-export default async function HistoryPage() {
-  const { quotes, diagrams } = await getHistory();
+export default function HistoryPage() {
+  const [quotes, setQuotes] = useState<any[]>([]);
+  const [diagrams, setDiagrams] = useState<any[]>([]);
+  const [search, setSearch] = useState('');
+  const [tab, setTab] = useState<'all' | 'quotes' | 'diagrams'>('all');
+
+  useEffect(() => {
+    try {
+      const q = localStorage.getItem(QUOTES_KEY);
+      const d = localStorage.getItem(DIAGRAMS_KEY);
+      const c = localStorage.getItem(CLIENTS_KEY);
+      const clientMap: Record<string, string> = {};
+      if (c) {
+        JSON.parse(c).forEach((cl: any) => { clientMap[cl.id] = cl.name; });
+      }
+      const parsedQ = q ? JSON.parse(q).map((item: any) => ({
+        ...item,
+        clientName: clientMap[item.clientId] || item.clientId || '—',
+      })) : [];
+      setQuotes(parsedQ);
+      setDiagrams(d ? JSON.parse(d) : []);
+    } catch {}
+  }, []);
+
+  const deleteQuote = (id: string) => {
+    if (!confirm('Supprimer ce devis ?')) return;
+    const updated = quotes.filter(q => q.id !== id);
+    setQuotes(updated);
+    localStorage.setItem(QUOTES_KEY, JSON.stringify(updated));
+  };
+
+  const deleteDiagram = (id: string) => {
+    if (!confirm('Supprimer ce schéma ?')) return;
+    const updated = diagrams.filter(d => d.id !== id);
+    setDiagrams(updated);
+    localStorage.setItem(DIAGRAMS_KEY, JSON.stringify(updated));
+  };
+
+  const filteredQuotes = quotes.filter(q =>
+    (q.title || '').toLowerCase().includes(search.toLowerCase()) ||
+    (q.clientName || '').toLowerCase().includes(search.toLowerCase())
+  );
+
+  const filteredDiagrams = diagrams.filter(d =>
+    (d.title || '').toLowerCase().includes(search.toLowerCase())
+  );
+
+  const showQuotes = tab === 'all' || tab === 'quotes';
+  const showDiagrams = tab === 'all' || tab === 'diagrams';
+  const totalItems = (showQuotes ? filteredQuotes.length : 0) + (showDiagrams ? filteredDiagrams.length : 0);
 
   return (
-    <div className="history-page">
-      <div className="page-header-actions" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-xl)' }}>
-        <h1 className="page-title">Historique Complet</h1>
-        <div className="actions" style={{ display: 'flex', gap: 'var(--spacing-md)' }}>
-          <div className="search-bar" style={{ position: 'relative' }}>
-            <Search size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-            <input type="text" placeholder="Rechercher..." className="input input-sm" style={{ paddingLeft: '34px', fontSize: '0.85rem' }} />
-          </div>
-          <button className="btn btn-secondary btn-sm">
-            <Filter size={16} />
-            Filtres
-          </button>
+    <div className="container-center animate-in" style={{ paddingTop: 'var(--spacing-lg)' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-xl)' }}>
+        <div>
+          <h1 style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text-main)', marginBottom: '4px' }}>
+            Historique Complet
+          </h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+            {quotes.length} devis · {diagrams.length} schémas · Stockage local
+          </p>
         </div>
       </div>
 
-      <div className="history-tabs" style={{ display: 'flex', gap: 'var(--spacing-md)', marginBottom: 'var(--spacing-xl)', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>
-        <button className="tab-btn active">Tout ({quotes.length + diagrams.length})</button>
-        <button className="tab-btn">Devis ({quotes.length})</button>
-        <button className="tab-btn">Schémas ({diagrams.length})</button>
+      {/* Search */}
+      <div className="card glass" style={{ marginBottom: '16px', padding: '16px 24px' }}>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <div style={{ position: 'relative', flex: 1 }}>
+            <Search size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+            <input
+              type="text"
+              placeholder="Rechercher par titre, client..."
+              className="input-modern"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              style={{ paddingLeft: '44px' }}
+            />
+          </div>
+        </div>
       </div>
 
-      <div className="history-list" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
-        {quotes.map((quote: any) => (
-          <div key={quote.id} className="card history-item" style={{ padding: '15px 20px', display: 'grid', gridTemplateColumns: '40px 2fr 1fr 1fr 120px 40px', alignItems: 'center', gap: '20px' }}>
-            <div className={`type-icon ${quote.type === 'DELIVERY' ? 'delivery' : 'automation'}`} style={{ width: '36px', height: '36px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: quote.type === 'DELIVERY' ? '#eff6ff' : '#f5f3ff' }}>
-              {quote.type === 'DELIVERY' ? <Truck size={18} color="#3b82f6" /> : <Zap size={18} color="#7c3aed" />}
-            </div>
-            
-            <div className="item-info">
-              <div style={{ fontWeight: 600, fontSize: '0.925rem' }}>{quote.title}</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Client: {quote.client.name}</div>
-            </div>
-
-            <div className="item-date" style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>
-              {new Date(quote.createdAt).toLocaleDateString('fr-FR')}
-            </div>
-
-            <div className="item-amount" style={{ fontWeight: 700, textAlign: 'right' }}>
-              {quote.totalAmount.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €
-            </div>
-
-            <div className="item-status">
-              <span className={`badge badge-${quote.status === 'PAID' ? 'success' : 'warning'}`} style={{ fontSize: '0.7rem' }}>
-                {quote.status}
-              </span>
-            </div>
-
-            <div className="item-actions">
-               <button className="btn-icon"><MoreVertical size={18} color="var(--text-muted)" /></button>
-            </div>
-          </div>
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
+        {([
+          { key: 'all', label: `Tout (${quotes.length + diagrams.length})` },
+          { key: 'quotes', label: `Devis (${quotes.length})` },
+          { key: 'diagrams', label: `Schémas (${diagrams.length})` },
+        ] as const).map(t => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            style={{
+              padding: '8px 20px', borderRadius: '30px', border: '2px solid',
+              fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s',
+              borderColor: tab === t.key ? 'var(--accent)' : 'var(--border)',
+              background: tab === t.key ? 'var(--accent)' : 'white',
+              color: tab === t.key ? 'white' : 'var(--text-main)',
+            }}
+          >
+            {t.label}
+          </button>
         ))}
-
-        {diagrams.map((diagram: any) => (
-          <div key={diagram.id} className="card history-item" style={{ padding: '15px 20px', display: 'grid', gridTemplateColumns: '40px 2fr 1fr 1fr 120px 40px', alignItems: 'center', gap: '20px' }}>
-            <div className="type-icon diagram" style={{ width: '36px', height: '36px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
-              <GitBranch size={18} color="var(--secondary)" />
-            </div>
-            
-            <div className="item-info">
-              <div style={{ fontWeight: 600, fontSize: '0.925rem' }}>{diagram.title || "Schéma de process"}</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Génération via texte</div>
-            </div>
-
-            <div className="item-date" style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>
-              {new Date(diagram.createdAt).toLocaleDateString('fr-FR')}
-            </div>
-
-            <div className="item-amount" style={{ fontWeight: 700, textAlign: 'right', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-              —
-            </div>
-
-            <div className="item-status">
-              <span className="badge badge-info" style={{ fontSize: '0.7rem' }}>COMPLÉTÉ</span>
-            </div>
-
-            <div className="item-actions">
-               <button className="btn-icon"><MoreVertical size={18} color="var(--text-muted)" /></button>
-            </div>
-          </div>
-        ))}
-
-        {quotes.length === 0 && diagrams.length === 0 && (
-          <div className="card" style={{ textAlign: 'center', padding: '60px', color: 'var(--text-muted)' }}>
-            <History size={48} style={{ margin: '0 auto 15px', opacity: 0.2 }} />
-            <p>Aucun historique disponible pour le moment.</p>
-          </div>
-        )}
       </div>
 
+      {/* Empty State */}
+      {totalItems === 0 && (
+        <div className="card" style={{ textAlign: 'center', padding: '80px 40px' }}>
+          <div style={{ fontSize: '4rem', marginBottom: '16px' }}>📋</div>
+          <h3 style={{ fontWeight: 800, fontSize: '1.2rem', marginBottom: '8px' }}>
+            {search ? 'Aucun résultat' : 'Aucun historique'}
+          </h3>
+          <p style={{ color: 'var(--text-muted)' }}>
+            {search ? 'Modifiez votre recherche.' : 'Créez vos premiers devis depuis le tableau de bord.'}
+          </p>
+        </div>
+      )}
+
+      {/* Quotes */}
+      {showQuotes && filteredQuotes.length > 0 && (
+        <div style={{ marginBottom: '24px' }}>
+          <h2 style={{ fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', marginBottom: '12px' }}>
+            Devis ({filteredQuotes.length})
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {filteredQuotes.map((quote, idx) => (
+              <div
+                key={quote.id}
+                className="card animate-in"
+                style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 20px', animationDelay: `${idx * 0.04}s` }}
+              >
+                <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: quote.type === 'AUTOMATION' ? '#f5f3ff' : '#eff6ff', flexShrink: 0 }}>
+                  {quote.type === 'AUTOMATION' ? <Zap size={18} color="#7c3aed" /> : <Truck size={18} color="#3b82f6" />}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{quote.title || 'Devis sans titre'}</div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                    Client : {quote.clientName} · {quote.createdAt}
+                  </div>
+                </div>
+                {quote.total && (
+                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--accent)' }}>
+                    {Number(quote.total).toFixed(2)}€
+                  </div>
+                )}
+                <span style={{ fontSize: '0.7rem', padding: '3px 10px', borderRadius: '20px', background: '#dcfce7', color: '#166534', fontWeight: 600 }}>
+                  {quote.status || 'BROUILLON'}
+                </span>
+                <button
+                  onClick={() => deleteQuote(quote.id)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '4px', borderRadius: '4px' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = 'var(--error)')}
+                  onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Diagrams */}
+      {showDiagrams && filteredDiagrams.length > 0 && (
+        <div>
+          <h2 style={{ fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', marginBottom: '12px' }}>
+            Schémas ({filteredDiagrams.length})
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {filteredDiagrams.map((diagram, idx) => (
+              <div
+                key={diagram.id}
+                className="card animate-in"
+                style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 20px', animationDelay: `${idx * 0.04}s` }}
+              >
+                <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', flexShrink: 0 }}>
+                  <GitBranch size={18} color="var(--secondary)" />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{diagram.title || 'Schéma sans titre'}</div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                    Généré le {diagram.createdAt}
+                  </div>
+                </div>
+                <span style={{ fontSize: '0.7rem', padding: '3px 10px', borderRadius: '20px', background: '#dbeafe', color: '#1e40af', fontWeight: 600 }}>
+                  COMPLÉTÉ
+                </span>
+                <button
+                  onClick={() => deleteDiagram(diagram.id)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '4px', borderRadius: '4px' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = 'var(--error)')}
+                  onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

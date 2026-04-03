@@ -1,179 +1,163 @@
-import React from 'react';
-export const dynamic = 'force-dynamic';
-import { prisma } from '@/lib/db';
-import { 
-  Settings, 
-  DollarSign, 
-  Truck, 
-  Zap, 
-  Percent, 
-  Clock, 
-  Save,
-  Info
-} from 'lucide-react';
-import { revalidatePath } from 'next/cache';
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { DollarSign, Truck, Percent, Save, Info, CheckCircle } from 'lucide-react';
 import { SyncControls } from '@/components/settings/SyncControls';
 
-async function getSettings() {
-  try {
-    const settings = await prisma.pricingSettings.findFirst();
-    if (!settings) {
-      // Create default settings if none exist
-      return await prisma.pricingSettings.create({
-        data: {
-          hourlyRate: 60,
-          travelHourlyRate: 35,
-          fuelPriceDefault: 1.85,
-          complexityCoeffs: JSON.stringify({ basic: 1, medium: 1.3, high: 1.8 }),
-          multiToolCoeffs: JSON.stringify({ base: 1.1 }),
-          multiIACoeffs: JSON.stringify({ base: 1.25 }),
-          riskCoeffs: JSON.stringify({ low: 1, med: 1.2, high: 1.5 }),
-          minForfait: 80,
-        }
-      });
-    }
-    return settings;
-  } catch (error) {
-    console.warn("⚠️ [Prisma] Erreur lors de la récupération des paramètres, utilisation du fallback.");
-    return {
-      id: 'fallback',
-      hourlyRate: 60,
-      travelHourlyRate: 35,
-      fuelPriceDefault: 1.85,
-      complexityCoeffs: JSON.stringify({ basic: 1, medium: 1.3, high: 1.8 }),
-      multiToolCoeffs: JSON.stringify({ base: 1.1 }),
-      multiIACoeffs: JSON.stringify({ base: 1.25 }),
-      riskCoeffs: JSON.stringify({ low: 1, med: 1.2, high: 1.5 }),
-      minForfait: 80,
-    } as any;
-  }
-}
+const SETTINGS_KEY = 'digitalsaurien_settings';
 
-async function updateSettings(formData: FormData) {
-  'use server';
-  
-  try {
-    const id = formData.get('id') as string;
-    const hourlyRate = parseFloat(formData.get('hourlyRate') as string);
-    const travelHourlyRate = parseFloat(formData.get('travelHourlyRate') as string);
-    const fuelPriceDefault = parseFloat(formData.get('fuelPriceDefault') as string);
+const DEFAULT_SETTINGS = {
+  hourlyRate: 60,
+  travelHourlyRate: 35,
+  fuelPriceDefault: 1.85,
+};
 
-    if (id === 'fallback') {
-      await prisma.pricingSettings.create({
-        data: {
-          hourlyRate,
-          travelHourlyRate,
-          fuelPriceDefault,
-          complexityCoeffs: JSON.stringify({ basic: 1, medium: 1.3, high: 1.8 }),
-          multiToolCoeffs: JSON.stringify({ base: 1.1 }),
-          multiIACoeffs: JSON.stringify({ base: 1.25 }),
-          riskCoeffs: JSON.stringify({ low: 1, med: 1.2, high: 1.5 }),
-        }
-      });
-    } else {
-      await prisma.pricingSettings.update({
-        where: { id },
-        data: {
-          hourlyRate,
-          travelHourlyRate,
-          fuelPriceDefault
-        }
-      });
-    }
+export default function SettingsPage() {
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [saved, setSaved] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
 
-    revalidatePath('/settings');
-  } catch (error) {
-    console.error("❌ [Prisma] Erreur lors de la mise à jour des paramètres:", error);
-  }
-}
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(SETTINGS_KEY);
+      if (stored) setSettings(JSON.parse(stored));
+    } catch {}
+  }, []);
 
-export default async function SettingsPage() {
-  const settings = await getSettings();
+  const handleChange = (field: string, value: string) => {
+    setSettings(prev => ({ ...prev, [field]: parseFloat(value) || 0 }));
+    setIsDirty(true);
+  };
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    setSaved(true);
+    setIsDirty(false);
+    setTimeout(() => setSaved(false), 2500);
+  };
 
   return (
-    <div className="settings-container">
-      <div className="section-header" style={{ marginBottom: 'var(--spacing-xl)' }}>
-        <h1 className="page-title">Paramètres</h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Configurez vos taux par défaut et coefficients de calcul.</p>
+    <div className="container-center animate-in" style={{ paddingTop: 'var(--spacing-lg)' }}>
+      {/* Header */}
+      <div style={{ marginBottom: 'var(--spacing-xl)' }}>
+        <h1 style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text-main)', marginBottom: '4px' }}>
+          Paramètres
+        </h1>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+          Configurez vos taux par défaut et coefficients de calcul · Stockage local
+        </p>
       </div>
 
-      {/* Synchronisation Google Drive */}
+      {/* Sync Controls */}
       <SyncControls />
 
-      <form action={updateSettings} className="settings-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'var(--spacing-xl)' }}>
-        <input type="hidden" name="id" value={settings.id} />
-        
-        {/* General Pricing */}
-        <div className="card">
-          <div className="card-header" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: 'var(--spacing-lg)' }}>
-            <DollarSign size={20} color="var(--accent)" />
-            <h3 style={{ fontSize: '1rem' }}>Tarification Générale</h3>
-          </div>
-          
-          <div className="form-group" style={{ marginBottom: 'var(--spacing-md)' }}>
-            <label className="label">Taux horaire principal (€/h)</label>
-            <input type="number" step="0.01" name="hourlyRate" defaultValue={settings.hourlyRate} className="input" />
-            <p className="hint">Utilisé pour les prestations IT et la main d'œuvre.</p>
+      {/* Settings Form */}
+      <form onSubmit={handleSave}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-lg)', marginBottom: 'var(--spacing-lg)' }}>
+
+          {/* Tarification */}
+          <div className="card">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
+              <DollarSign size={22} color="var(--accent)" />
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>Tarification Générale</h3>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div>
+                <label className="label-modern">Taux horaire principal (€/h)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="input-modern"
+                  value={settings.hourlyRate}
+                  onChange={e => handleChange('hourlyRate', e.target.value)}
+                />
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '6px' }}>
+                  Utilisé pour les prestations IT et la main d'œuvre.
+                </p>
+              </div>
+
+              <div>
+                <label className="label-modern">Taux horaire déplacement (€/h)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="input-modern"
+                  value={settings.travelHourlyRate}
+                  onChange={e => handleChange('travelHourlyRate', e.target.value)}
+                />
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '6px' }}>
+                  Utilisé pour le temps passé sur la route (Livraison).
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div className="form-group">
-            <label className="label">Taux horaire déplacement (€/h)</label>
-            <input type="number" step="0.01" name="travelHourlyRate" defaultValue={settings.travelHourlyRate} className="input" />
-            <p className="hint">Utilisé pour le temps passé sur la route (Livraison).</p>
+          {/* Carburant */}
+          <div className="card">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
+              <Truck size={22} color="var(--accent)" />
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>Logistique & Carburant</h3>
+            </div>
+
+            <div>
+              <label className="label-modern">Prix carburant par défaut (€/L)</label>
+              <input
+                type="number"
+                step="0.001"
+                className="input-modern"
+                value={settings.fuelPriceDefault}
+                onChange={e => handleChange('fuelPriceDefault', e.target.value)}
+              />
+            </div>
+
+            <div style={{ marginTop: '20px', background: 'rgba(59, 130, 246, 0.05)', padding: '12px', borderRadius: 'var(--radius-sm)', display: 'flex', gap: '10px' }}>
+              <Info size={18} color="var(--accent)" style={{ flexShrink: 0 }} />
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                Ces valeurs servent de base aux formulaires de devis mais peuvent être ajustées individuellement lors de la saisie.
+              </p>
+            </div>
+          </div>
+
+          {/* Coefficients */}
+          <div className="card" style={{ gridColumn: 'span 2' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
+              <Percent size={22} color="var(--accent)" />
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>Coefficients de Complexité (Logiciel / IA)</h3>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--spacing-lg)' }}>
+              {[
+                { label: 'Complexité Basse', value: '× 1.0', color: '#10b981' },
+                { label: 'Complexité Moyenne', value: '× 1.3', color: '#f59e0b' },
+                { label: 'Complexité Haute', value: '× 1.8', color: '#ef4444' },
+              ].map(c => (
+                <div key={c.label} style={{ textAlign: 'center', padding: '20px', borderRadius: 'var(--radius-md)', background: 'var(--background)' }}>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '8px' }}>{c.label}</div>
+                  <div style={{ fontSize: '2rem', fontWeight: 900, color: c.color }}>{c.value}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Vehicle & Fuel */}
-        <div className="card">
-          <div className="card-header" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: 'var(--spacing-lg)' }}>
-            <Truck size={20} color="var(--accent)" />
-            <h3 style={{ fontSize: '1rem' }}>Logistique & Carburant</h3>
-          </div>
-          
-          <div className="form-group" style={{ marginBottom: 'var(--spacing-md)' }}>
-            <label className="label">Prix carburant par défaut (€/L)</label>
-            <input type="number" step="0.001" name="fuelPriceDefault" defaultValue={settings.fuelPriceDefault} className="input" />
-          </div>
-
-          <div className="info-box" style={{ background: '#f0f9ff', padding: '12px', borderRadius: '8px', display: 'flex', gap: '10px', marginTop: '12px' }}>
-            <Info size={18} color="#0369a1" />
-            <p style={{ fontSize: '0.75rem', color: '#0369a1' }}>
-              Ces valeurs servent de base aux formulaires de devis mais peuvent être ajustées individuellement lors de la saisie.
-            </p>
-          </div>
-        </div>
-
-        {/* Automation Coeffs (Static Display for now) */}
-        <div className="card" style={{ gridColumn: 'span 2' }}>
-          <div className="card-header" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: 'var(--spacing-lg)' }}>
-            <Percent size={20} color="var(--accent)" />
-            <h3 style={{ fontSize: '1rem' }}>Coefficients de Complexité (Logiciel/IA)</h3>
-          </div>
-          
-          <div className="coeffs-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--spacing-lg)' }}>
-            <div className="coeff-item">
-              <span className="label">Complexité Basse</span>
-              <div className="coeff-value">× 1.0</div>
-            </div>
-            <div className="coeff-item">
-              <span className="label">Complexité Moyenne</span>
-              <div className="coeff-value">× 1.3</div>
-            </div>
-            <div className="coeff-item">
-              <span className="label">Complexité Haute</span>
-              <div className="coeff-value">× 1.8</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="form-actions" style={{ gridColumn: 'span 2', display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--spacing-md)' }}>
-          <button type="submit" className="btn btn-primary">
+        {/* Save Button */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', alignItems: 'center' }}>
+          {saved && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#10b981', fontWeight: 600, fontSize: '0.9rem' }}>
+              <CheckCircle size={18} /> Paramètres sauvegardés !
+            </span>
+          )}
+          <button
+            type="submit"
+            className="btn-wow"
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '14px 32px', borderRadius: 'var(--radius-md)' }}
+          >
             <Save size={18} />
-            Mettre à jour les paramètres
+            {isDirty ? 'Enregistrer les modifications' : 'Paramètres à jour'}
           </button>
         </div>
       </form>
-
     </div>
   );
 }
