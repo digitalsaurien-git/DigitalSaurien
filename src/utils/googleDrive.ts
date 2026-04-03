@@ -4,7 +4,7 @@
  * Path: /DigitalSaurien/AUTOMATE/DigitalSaurien
  */
 
-export const CLIENT_ID = "867619813314-h3gf1ro6fn1ddotkttso119lbiphi2rv.apps.googleusercontent.com";
+export const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_DRIVE_CLIENT_ID || "867619813314-h3gf1ro6fn1ddotkttso119lbiphi2rv.apps.googleusercontent.com";
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
 let tokenClient: any;
