@@ -32,10 +32,12 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
     <div className="app-layout">
       <aside className="sidebar">
         <div className="sidebar-header">
-          <div className="logo">
-            <span className="logo-icon"><Zap size={24} fill="#3b82f6" stroke="#3b82f6" /></span>
-            <span className="logo-text">DigitalSaurien</span>
-          </div>
+          <Link href="/dashboard" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+            <div className="logo">
+              <span className="logo-icon"><Zap size={24} fill="#3b82f6" stroke="#3b82f6" /></span>
+              <span className="logo-text">DigitalSaurien</span>
+            </div>
+          </Link>
         </div>
         
         <nav className="sidebar-nav">
@@ -58,7 +60,7 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
         </nav>
 
         <div className="sidebar-footer">
-          <NavItem href="/settings" icon={<Settings size={20} />} label="Paramètres métier" />
+          <NavItem href="/settings" icon={<Settings size={20} />} label="Paramètres" />
         </div>
       </aside>
 

@@ -75,7 +75,7 @@ export default async function SettingsPage() {
   return (
     <div className="settings-container">
       <div className="section-header" style={{ marginBottom: 'var(--spacing-xl)' }}>
-        <h1 className="page-title">Paramètres Métier</h1>
+        <h1 className="page-title">Paramètres</h1>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Configurez vos taux par défaut et coefficients de calcul.</p>
       </div>
 
