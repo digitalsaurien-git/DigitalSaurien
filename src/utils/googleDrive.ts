@@ -104,11 +104,31 @@ async function getOrCreateFolder(name: string, parentId = 'root'): Promise<strin
   }
 }
 
-// Helper to resolve a full path (e.g. "Folder/Subfolder/App")
+// Helper to resolve a full path (e.g. "DigitalSaurien/AUTOMATE/DigitalSaurien")
 async function resolvePath(pathString: string): Promise<string> {
   const folders = pathString.split('/').filter(f => f.length > 0);
   let currentId = 'root';
-  for (const folderName of folders) {
+
+  // DigitalSaurien ID fix (via env)
+  const rootId = process.env.NEXT_PUBLIC_GOOGLE_DRIVE_ROOT_ID;
+  const automateId = process.env.NEXT_PUBLIC_GOOGLE_DRIVE_AUTOMATE_ID;
+
+  for (let i = 0; i < folders.length; i++) {
+    const folderName = folders[i];
+
+    // Priority: use the provided IDs for root hierarchy if context matches
+    if (folderName === 'DigitalSaurien' && i === 0 && rootId) {
+      console.log(`🔗 [Drive] Utilisation de l'ID statique pour DigitalSaurien: ${rootId}`);
+      currentId = rootId;
+      continue;
+    }
+
+    if (folderName === 'AUTOMATE' && i === 1 && automateId) {
+      console.log(`🔗 [Drive] Utilisation de l'ID statique pour AUTOMATE: ${automateId}`);
+      currentId = automateId;
+      continue;
+    }
+
     currentId = await getOrCreateFolder(folderName, currentId);
   }
   return currentId;

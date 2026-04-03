@@ -20,6 +20,7 @@ Créer une application web professionnelle pour un prestataire indépendant, reg
 - **Méthode** : Export/Import client-side via GAPI & GIS.
 - **Fichier** : `digitalsaurien_sync_backup.json`.
 - **Emplacement** : `/DigitalSaurien/AUTOMATE/DigitalSaurien`.
+- **Anti-Doublons** : Support des IDs de dossiers fixes via `.env` (`NEXT_PUBLIC_GOOGLE_DRIVE_ROOT_ID` et `NEXT_PUBLIC_GOOGLE_DRIVE_AUTOMATE_ID`).
 - **Fonctionnalités** :
     - Connexion via compte Google.
     - Sauvegarde manuelle des données locales vers le Drive.
