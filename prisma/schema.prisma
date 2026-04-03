@@ -40,6 +40,7 @@ model PricingSettings {
   hardshipThreshold      Float    @default(8.0) // Heures
   hardshipSurcharge      Float    @default(1.2) // Coefficient
   fuelPriceDefault       Float    @default(1.8)
+  minForfait             Float    @default(80.0) // Forfait minimum livraison
   complexityCoeffs       String   // JSON string of coeffs
   multiToolCoeffs       String   // JSON string of coeffs
   multiIACoeffs         String   // JSON string of coeffs

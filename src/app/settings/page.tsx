@@ -15,22 +15,38 @@ import { revalidatePath } from 'next/cache';
 import { SyncControls } from '@/components/settings/SyncControls';
 
 async function getSettings() {
-  const settings = await prisma.pricingSettings.findFirst();
-  if (!settings) {
-    // Create default settings if none exist
-    return await prisma.pricingSettings.create({
-      data: {
-        hourlyRate: 60,
-        travelHourlyRate: 35,
-        fuelPriceDefault: 1.85,
-        complexityCoeffs: JSON.stringify({ basic: 1, medium: 1.3, high: 1.8 }),
-        multiToolCoeffs: JSON.stringify({ base: 1.1 }),
-        multiIACoeffs: JSON.stringify({ base: 1.25 }),
-        riskCoeffs: JSON.stringify({ low: 1, med: 1.2, high: 1.5 }),
-      }
-    });
+  try {
+    const settings = await prisma.pricingSettings.findFirst();
+    if (!settings) {
+      // Create default settings if none exist
+      return await prisma.pricingSettings.create({
+        data: {
+          hourlyRate: 60,
+          travelHourlyRate: 35,
+          fuelPriceDefault: 1.85,
+          complexityCoeffs: JSON.stringify({ basic: 1, medium: 1.3, high: 1.8 }),
+          multiToolCoeffs: JSON.stringify({ base: 1.1 }),
+          multiIACoeffs: JSON.stringify({ base: 1.25 }),
+          riskCoeffs: JSON.stringify({ low: 1, med: 1.2, high: 1.5 }),
+          minForfait: 80,
+        }
+      });
+    }
+    return settings;
+  } catch (error) {
+    console.warn("⚠️ [Prisma] Erreur lors de la récupération des paramètres, utilisation du fallback.");
+    return {
+      id: 'fallback',
+      hourlyRate: 60,
+      travelHourlyRate: 35,
+      fuelPriceDefault: 1.85,
+      complexityCoeffs: JSON.stringify({ basic: 1, medium: 1.3, high: 1.8 }),
+      multiToolCoeffs: JSON.stringify({ base: 1.1 }),
+      multiIACoeffs: JSON.stringify({ base: 1.25 }),
+      riskCoeffs: JSON.stringify({ low: 1, med: 1.2, high: 1.5 }),
+      minForfait: 80,
+    } as any;
   }
-  return settings;
 }
 
 async function updateSettings(formData: FormData) {
