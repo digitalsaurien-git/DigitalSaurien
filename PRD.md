@@ -14,7 +14,7 @@ Créer une application web professionnelle pour un prestataire indépendant, reg
 
 ### 🗄️ Base de Données
 - **Principal** : SQLite (`prisma/dev.db`) pour la rapidité et l'usage hors-ligne.
-- **ORM** : Prisma 7.
+- **ORM** : Prisma 6 (Stable).
 
 ### ☁️ Synchronisation Cloud (Google Drive)
 - **Méthode** : Export/Import client-side via GAPI & GIS.
@@ -26,12 +26,13 @@ Créer une application web professionnelle pour un prestataire indépendant, reg
     - Restauration des données depuis le Drive vers la machine locale.
 
 ## ✅ Fonctionnalités Développées
-1. **Module Livraison** : Calculateur de devis dynamique (Carburant, Temps, Risque).
-2. **Module Automatisation** : Calculateur de prestations IT/IA avec coefficients de complexité.
-3. **Générateur de Schémas** : Interface de création de diagrammes via texte.
-4. **Gestion Clients** : Base de données clients et historique des devis.
-5. **Dashboard Central** : Vue d'ensemble de l'activité et statistiques.
-6. **Persistance Hybride** : SQLite local synchronisé sur Google Drive.
+1. **Module Livraison V2 (Premium)** : Calculateur de devis dynamique optimisé (Carburant, Temps, Risque) avec synthèse visuelle "Wow".
+2. **Module Automatisation V2 (Premium)** : Calculateur de prestations IT/IA avec coefficients de complexité ajustés et indicateur de temps de réalisation.
+3. **Robustesse Saisie** : Gestion intelligente des saisies (correction automatique des NaN, gestion des champs vides).
+4. **Générateur de Schémas** : Interface de création de diagrammes via texte.
+5. **Gestion Clients** : Base de données clients et historique des devis.
+6. **Dashboard Central** : Vue d'ensemble de l'activité et statistiques.
+7. **Persistance Hybride** : SQLite local synchronisé sur Google Drive.
 
 #### 1. Architecture & Design System
 - [x] **Framework** : Next.js 15 (App Router).
