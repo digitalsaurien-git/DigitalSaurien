@@ -10,6 +10,29 @@ Créer une application web professionnelle pour un prestataire indépendant, reg
 
 ### Fonctionnalités Développées
 
+#### 🛠️ Architecture & Persistance
+
+### 🗄️ Base de Données
+- **Principal** : SQLite (`prisma/dev.db`) pour la rapidité et l'usage hors-ligne.
+- **ORM** : Prisma 7.
+
+### ☁️ Synchronisation Cloud (Google Drive)
+- **Méthode** : Export/Import client-side via GAPI & GIS.
+- **Fichier** : `digitalsaurien_sync_backup.json`.
+- **Emplacement** : `/DigitalSaurien/AUTOMATE/DigitalSaurien`.
+- **Fonctionnalités** :
+    - Connexion via compte Google.
+    - Sauvegarde manuelle des données locales vers le Drive.
+    - Restauration des données depuis le Drive vers la machine locale.
+
+## ✅ Fonctionnalités Développées
+1. **Module Livraison** : Calculateur de devis dynamique (Carburant, Temps, Risque).
+2. **Module Automatisation** : Calculateur de prestations IT/IA avec coefficients de complexité.
+3. **Générateur de Schémas** : Interface de création de diagrammes via texte.
+4. **Gestion Clients** : Base de données clients et historique des devis.
+5. **Dashboard Central** : Vue d'ensemble de l'activité et statistiques.
+6. **Persistance Hybride** : SQLite local synchronisé sur Google Drive.
+
 #### 1. Architecture & Design System
 - [x] **Framework** : Next.js 15 (App Router).
 - [x] **Langage** : TypeScript.

@@ -11,7 +11,24 @@ async function getData() {
     prisma.pricingSettings.findFirst()
   ]);
   
-  return { clients, settings };
+  const defaultPricing = {
+    hourlyRate: 60.0,
+    travelHourlyRate: 35.0,
+    hardshipThreshold: 8.0,
+    hardshipSurcharge: 1.2,
+    fuelPriceDefault: 1.85,
+    complexityCoeffs: JSON.stringify({ basic: 1, medium: 1.3, high: 1.8 }),
+    multiToolCoeffs: JSON.stringify({ base: 1.1 }),
+    multiIACoeffs: JSON.stringify({ base: 1.25 }),
+    riskCoeffs: JSON.stringify({ low: 1, med: 1.2, high: 1.5 }),
+    accountCreationCost: 50.0,
+    subscriptionSetupCost: 30.0,
+  };
+
+  return { 
+    clients, 
+    settings: settings || defaultPricing 
+  };
 }
 
 export default async function NewDeliveryQuotePage() {

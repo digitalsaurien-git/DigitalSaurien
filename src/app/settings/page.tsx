@@ -12,6 +12,7 @@ import {
   Info
 } from 'lucide-react';
 import { revalidatePath } from 'next/cache';
+import { SyncControls } from '@/components/settings/SyncControls';
 
 async function getSettings() {
   const settings = await prisma.pricingSettings.findFirst();
@@ -61,6 +62,9 @@ export default async function SettingsPage() {
         <h1 className="page-title">Paramètres Métier</h1>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Configurez vos taux par défaut et coefficients de calcul.</p>
       </div>
+
+      {/* Synchronisation Google Drive */}
+      <SyncControls />
 
       <form action={updateSettings} className="settings-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'var(--spacing-xl)' }}>
         <input type="hidden" name="id" value={settings.id} />
