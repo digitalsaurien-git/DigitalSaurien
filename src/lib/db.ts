@@ -10,6 +10,11 @@ dotenv.config()
 
 const prismaClientSingleton = () => {
   return new PrismaClient({
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL || "file:./dev.db"
+      }
+    },
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
   })
 }
