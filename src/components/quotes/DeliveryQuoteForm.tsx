@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Truck, MapPin, Clock, Fuel, Calculator, ChevronRight, ShieldCheck, Navigation, DollarSign, AlertTriangle, Info } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Truck, MapPin, Clock, Fuel, Calculator, ChevronRight, ShieldCheck, Navigation, DollarSign, AlertTriangle, Info, Loader2 } from 'lucide-react';
 import { calculateDeliveryQuote, DeliveryQuoteInput, DeliveryQuoteResult } from '@/services/quoteCalculators';
+import { createDeliveryQuote } from '@/app/actions/quotes';
 
 interface DeliveryQuoteFormProps {
   clients: { id: string; name: string }[];
@@ -19,9 +21,12 @@ function loadSettings() {
 }
 
 export default function DeliveryQuoteForm({ clients, defaultSettings }: DeliveryQuoteFormProps) {
+  const router = useRouter();
   const [localClients, setLocalClients] = useState<{ id: string; name: string }[]>([]);
   const [result, setResult] = useState<DeliveryQuoteResult | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     clientId: '',
     title: '',
@@ -203,16 +208,18 @@ export default function DeliveryQuoteForm({ clients, defaultSettings }: Delivery
               </div>
               <div>
                 <label className="label-modern">Conso (L/100)</label>
-                <input name="fuelConsumption" type="number" step="0.1" className="input-modern" value={formData.fuelConsumption} onChange={handleChange} />
+                <input name="fuelConsumption" type="number" step="0.1" className="input-modern" value={formData.fuelConsumption || ''} onChange={handleChange} />
               </div>
               <div>
                 <label className="label-modern">Carburant (€/L)</label>
-                <input name="fuelPrice" type="number" step="0.01" className="input-modern" value={formData.fuelPrice} onChange={handleChange} />
+                <input name="fuelPrice" type="number" step="0.01" className="input-modern" value={formData.fuelPrice || ''} onChange={handleChange} />
               </div>
               <div>
                 <label className="label-modern" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                   Tarif/km
-                  <Info size={12} color="var(--text-muted)" title="Calculé automatiquement selon le kilométrage" />
+                  <span title="Calculé automatiquement selon le kilométrage">
+                    <Info size={12} color="var(--text-muted)" />
+                  </span>
                 </label>
                 <div style={{
                   padding: '0.875rem 1rem', borderRadius: 'var(--radius-md)',
@@ -271,30 +278,30 @@ export default function DeliveryQuoteForm({ clients, defaultSettings }: Delivery
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginTop: '20px' }}>
                 <div>
                   <label className="label-modern">Taux déplacement (€/h)</label>
-                  <input name="travelHourlyRate" type="number" step="1" className="input-modern" value={formData.travelHourlyRate} onChange={handleChange} />
+                  <input name="travelHourlyRate" type="number" step="1" className="input-modern" value={formData.travelHourlyRate || ''} onChange={handleChange} />
                   <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px' }}>Taux horaire conducteur/déplacement</p>
                 </div>
                 <div>
                   <label className="label-modern">Coeff. temps trajet</label>
-                  <input name="travelTimeCoeff" type="number" step="0.05" min="0" max="1" className="input-modern" value={formData.travelTimeCoeff} onChange={handleChange} />
+                  <input name="travelTimeCoeff" type="number" step="0.05" min="0" max="1" className="input-modern" value={formData.travelTimeCoeff || ''} onChange={handleChange} />
                   <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px' }}>0,5 = 50% du taux (recommandé)</p>
                 </div>
                 <div>
                   <label className="label-modern">Taux majoration nuit/WE (%)</label>
-                  <input name="hardshipRate" type="number" step="5" min="0" max="100" className="input-modern" value={formData.hardshipRate} onChange={handleChange} />
+                  <input name="hardshipRate" type="number" step="5" min="0" max="100" className="input-modern" value={formData.hardshipRate || ''} onChange={handleChange} />
                   <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px' }}>Appliqué sur le temps de trajet seul</p>
                 </div>
                 <div>
                   <label className="label-modern">Base véhicule (€/km)</label>
-                  <input name="baseCostPerKm" type="number" step="0.01" min="0" className="input-modern" value={formData.baseCostPerKm} onChange={handleChange} />
+                  <input name="baseCostPerKm" type="number" step="0.01" min="0" className="input-modern" value={formData.baseCostPerKm || ''} onChange={handleChange} />
                 </div>
                 <div>
                   <label className="label-modern">Forfait minimum (€)</label>
-                  <input name="minForfait" type="number" step="5" min="0" className="input-modern" value={formData.minForfait} onChange={handleChange} />
+                  <input name="minForfait" type="number" step="5" min="0" className="input-modern" value={formData.minForfait || ''} onChange={handleChange} />
                 </div>
                 <div>
                   <label className="label-modern">Nb animaux</label>
-                  <input name="animalCount" type="number" step="1" min="1" className="input-modern" value={formData.animalCount} onChange={handleChange} />
+                  <input name="animalCount" type="number" step="1" min="1" className="input-modern" value={formData.animalCount || ''} onChange={handleChange} />
                 </div>
               </div>
             )}
@@ -359,12 +366,57 @@ export default function DeliveryQuoteForm({ clients, defaultSettings }: Delivery
                   {formData.vehicleKm > 0 && ` (véhicule à ${formData.vehicleKm.toLocaleString('fr-FR')} km)`}
                 </div>
 
-                <button className="btn-wow" style={{
-                  width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  gap: '10px', padding: '16px', borderRadius: 'var(--radius-md)', fontSize: '1rem'
-                }}>
-                  Confirmer & Sauvegarder
-                  <ChevronRight size={20} />
+                {saveError && (
+                  <div style={{ color: 'var(--error)', fontSize: '0.8rem', textAlign: 'center', marginBottom: '12px' }}>
+                    {saveError}
+                  </div>
+                )}
+
+                <button 
+                  className="btn-wow" 
+                  onClick={async () => {
+                    if (!formData.clientId) {
+                      setSaveError("Veuillez sélectionner un client.");
+                      return;
+                    }
+                    setIsSaving(true);
+                    setSaveError(null);
+                    const res = await createDeliveryQuote({
+                      clientId: formData.clientId,
+                      title: formData.title,
+                      total: result.total,
+                      subtotal: result.subtotal,
+                      breakdown: result.breakdown,
+                      origin: formData.origin,
+                      destination: formData.destination,
+                      distance: formData.distance,
+                      duration: formData.duration,
+                      tolls: formData.tolls,
+                      animalCount: formData.animalCount,
+                      fuelPrice: formData.fuelPrice,
+                    });
+                    setIsSaving(false);
+                    if (res.success) {
+                      router.push('/dashboard');
+                    } else {
+                      setSaveError(res.error || "Une erreur est survenue.");
+                    }
+                  }}
+                  disabled={isSaving}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    gap: '10px', padding: '16px', borderRadius: 'var(--radius-md)', fontSize: '1rem',
+                    opacity: isSaving ? 0.7 : 1, cursor: isSaving ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  {isSaving ? (
+                    <Loader2 size={20} className="animate-spin" />
+                  ) : (
+                    <>
+                      Confirmer & Sauvegarder
+                      <ChevronRight size={20} />
+                    </>
+                  )}
                 </button>
               </div>
             )}

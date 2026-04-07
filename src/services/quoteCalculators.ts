@@ -20,6 +20,8 @@ export interface DeliveryQuoteInput {
   hardshipRate: number;          // taux majoration % (défaut 10%)
   minForfait: number;            // montant minimum
   baseCostPerKm: number;         // coût de base véhicule €/km (défaut 0.15)
+  clientId?: string;
+  title?: string;
 }
 
 export interface DeliveryQuoteResult {
@@ -120,6 +122,8 @@ export interface AutomationQuoteInput {
   hasDatabase: boolean;
   dbFee: number;
   discountPercent: number;
+  clientId?: string;
+  title?: string;
 }
 
 export interface AutomationQuoteResult {

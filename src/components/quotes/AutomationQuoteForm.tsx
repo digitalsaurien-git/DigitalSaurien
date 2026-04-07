@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   Zap, 
   Clock, 
@@ -14,9 +15,11 @@ import {
   ChevronRight,
   Info,
   Layers,
-  Sparkles
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 import { calculateAutomationQuote, AutomationQuoteInput, AutomationQuoteResult } from '@/services/quoteCalculators';
+import { createAutomationQuote } from '@/app/actions/quotes';
 
 interface AutomationQuoteFormProps {
   clients: { id: string; name: string }[];
@@ -24,6 +27,9 @@ interface AutomationQuoteFormProps {
 }
 
 export default function AutomationQuoteForm({ clients, defaultSettings }: AutomationQuoteFormProps) {
+  const router = useRouter();
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [formData, setFormData] = useState<AutomationQuoteInput>({
     baseHours: 0,
     hourlyRate: defaultSettings.hourlyRate,
@@ -124,13 +130,13 @@ export default function AutomationQuoteForm({ clients, defaultSettings }: Automa
                   <label className="label-modern" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem' }}>
                     <Layers size={14} color="var(--primary)" /> Connecteurs SaaS (n)
                   </label>
-                  <input type="number" name="toolCount" value={formData.toolCount} onChange={handleChange} className="input-modern" style={{ background: 'white' }} min="1" />
+                  <input type="number" name="toolCount" value={formData.toolCount || ''} onChange={handleChange} className="input-modern" style={{ background: 'white' }} min="1" />
                 </div>
                 <div className="form-field">
                   <label className="label-modern" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem' }}>
                     <Zap size={14} color="#f59e0b" /> Micro-services IA (n)
                   </label>
-                  <input type="number" name="iaCount" value={formData.iaCount} onChange={handleChange} className="input-modern" style={{ background: 'white' }} min="0" />
+                  <input type="number" name="iaCount" value={formData.iaCount || ''} onChange={handleChange} className="input-modern" style={{ background: 'white' }} min="0" />
                 </div>
               </div>
               <div style={{ marginTop: '12px', fontSize: '0.7rem', color: 'var(--primary)', fontWeight: 500 }}>
@@ -170,12 +176,12 @@ export default function AutomationQuoteForm({ clients, defaultSettings }: Automa
 
             <div className="form-field">
               <label className="label-modern">Comptes utilisateurs à créer</label>
-              <input type="number" name="accountsCreated" value={formData.accountsCreated} onChange={handleChange} className="input-modern" min="0" />
+              <input type="number" name="accountsCreated" value={formData.accountsCreated || ''} onChange={handleChange} className="input-modern" min="0" />
             </div>
 
             <div className="form-field">
               <label className="label-modern">Remise commerciale (%)</label>
-              <input type="number" name="discountPercent" value={formData.discountPercent} onChange={handleChange} className="input-modern" placeholder="0" min="0" max="100" />
+              <input type="number" name="discountPercent" value={formData.discountPercent || ''} onChange={handleChange} className="input-modern" placeholder="0" min="0" max="100" />
             </div>
           </div>
         </div>
@@ -225,9 +231,52 @@ export default function AutomationQuoteForm({ clients, defaultSettings }: Automa
               </div>
 
               <div className="actions" style={{ marginTop: '30px' }}>
-                <button className="btn btn-primary btn-wow" style={{ width: '100%', padding: '16px', background: '#7c3aed', borderRadius: '12px', fontWeight: 700, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                  Valider & Générer PDF
-                  <ChevronRight size={18} />
+                {saveError && (
+                  <div style={{ color: 'var(--error)', fontSize: '0.8rem', textAlign: 'center', marginBottom: '12px' }}>
+                    {saveError}
+                  </div>
+                )}
+                <button 
+                  className="btn btn-primary btn-wow" 
+                  onClick={async () => {
+                    if (!formData.clientId) {
+                      setSaveError("Veuillez sélectionner un client.");
+                      return;
+                    }
+                    setIsSaving(true);
+                    setSaveError(null);
+                    const res = await createAutomationQuote({
+                      clientId: formData.clientId!,
+                      title: formData.title!,
+                      total: result.total,
+                      subtotal: result.subtotal,
+                      breakdown: result.breakdown,
+                      baseHours: formData.baseHours,
+                      complexity: formData.complexityCoeff,
+                      toolCount: formData.toolCount,
+                      iaCount: formData.iaCount,
+                      accountsCreated: formData.accountsCreated,
+                      hasDatabase: formData.hasDatabase,
+                      hasMaintenance: formData.hasMaintenance,
+                    });
+                    setIsSaving(false);
+                    if (res.success) {
+                      router.push('/dashboard');
+                    } else {
+                      setSaveError(res.error || "Une erreur est survenue.");
+                    }
+                  }}
+                  disabled={isSaving}
+                  style={{ width: '100%', padding: '16px', background: '#7c3aed', borderRadius: '12px', fontWeight: 700, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', opacity: isSaving ? 0.7 : 1, cursor: isSaving ? 'not-allowed' : 'pointer' }}
+                >
+                  {isSaving ? (
+                    <Loader2 size={18} className="animate-spin" />
+                  ) : (
+                    <>
+                      Valider & Sauvegarder
+                      <ChevronRight size={18} />
+                    </>
+                  )}
                 </button>
               </div>
             </div>

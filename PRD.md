@@ -29,11 +29,12 @@ Créer une application web professionnelle pour un prestataire indépendant, reg
 ## ✅ Fonctionnalités Développées
 1. **Module Livraison V2 (Premium)** : Calculateur de devis dynamique optimisé (Carburant, Temps, Risque) avec synthèse visuelle "Wow".
 2. **Module Automatisation V2 (Premium)** : Calculateur de prestations IT/IA avec coefficients de complexité ajustés et indicateur de temps de réalisation.
-3. **Robustesse Saisie** : Gestion intelligente des saisies (correction automatique des NaN, gestion des champs vides).
+3. **Robustesse Saisie** : Gestion intelligente des saisies (correction automatique des NaN, gestion des champs vides via `|| ''` pour permettre l'effacement facile des zéros).
 4. **Générateur de Schémas** : Interface de création de diagrammes via texte.
 5. **Gestion Clients** : Base de données clients et historique des devis.
 6. **Dashboard Central** : Vue d'ensemble de l'activité et statistiques.
 7. **Persistance Hybride** : SQLite local synchronisé sur Google Drive.
+8. **Sauvegarde des Devis** : Mise en œuvre de la persistance réelle pour les devis de livraison via Server Actions et Prisma.
 
 #### 1. Architecture & Design System
 - [x] **Framework** : Next.js 15 (App Router).
