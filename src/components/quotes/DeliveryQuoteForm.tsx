@@ -439,6 +439,72 @@ export default function DeliveryQuoteForm({ clients, defaultSettings }: Delivery
           </div>
         </div>
       </div>
+
+      {/* --- INVOICE TEMPLATE (PRINT ONLY) --- */}
+      {result && (
+        <div className="print-only">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #000', paddingBottom: '20px', marginBottom: '20px' }}>
+            <div>
+              <h1 style={{ margin: 0, fontSize: '24pt', color: '#000' }}>DEVIS LIVRAISON</h1>
+              <p style={{ margin: '5px 0 0 0', color: '#555' }}>
+                Ref : {formData.title || `Livraison ${formData.origin || '?'} → ${formData.destination || '?'}`}
+              </p>
+              <p style={{ margin: '5px 0 0 0', color: '#555' }}>Date : {new Date().toLocaleDateString('fr-FR')}</p>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <h2 style={{ margin: 0, fontSize: '16pt' }}>DigitalSaurien</h2>
+              <p style={{ margin: '5px 0 0 0' }}>Prestation de Transport Animalier</p>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '30px' }}>
+            <h3 style={{ borderBottom: '1px solid #ccc', paddingBottom: '5px' }}>Détails du Trajet</h3>
+            <p><strong>Origine :</strong> {formData.origin || '-'}</p>
+            <p><strong>Destination :</strong> {formData.destination || '-'}</p>
+            <p><strong>Distance :</strong> {formData.distance} km</p>
+            <p><strong>Durée estimée :</strong> {formData.duration} heures</p>
+            <p><strong>Nombre d'animaux :</strong> {formData.animalCount}</p>
+          </div>
+
+          <h3 style={{ borderBottom: '1px solid #ccc', paddingBottom: '5px' }}>Détail de la facturation</h3>
+          <table className="print-only-table">
+            <thead>
+              <tr>
+                <th style={{ width: '70%' }}>Désignation</th>
+                <th style={{ width: '30%', textAlign: 'right' }}>Montant (HT)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {result.breakdown.map((item, idx) => (
+                <tr key={idx}>
+                  <td>{item.label}</td>
+                  <td style={{ textAlign: 'right' }}>
+                     {item.amount >= 0 ? '' : '−'}{Math.abs(item.amount).toFixed(2)} €
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '30px' }}>
+            <div style={{ width: '300px', border: '1px solid #000', padding: '15px', borderRadius: '5px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                <span>Sous-total HT :</span>
+                <span>{result.subtotal.toFixed(2)} €</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '14pt', borderTop: '2px solid #000', paddingTop: '10px' }}>
+                <span>TOTAL TTC :</span>
+                <span>{result.total.toFixed(2)} €</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: '50px', fontSize: '9pt', color: '#777', textAlign: 'center' }}>
+            <p>Devis valable 30 jours à compter de sa date d'émission.</p>
+            <p>Signature précédée de la mention "Bon pour Accord"</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

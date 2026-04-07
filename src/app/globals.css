@@ -167,29 +167,49 @@ body {
   padding: 0 var(--spacing-md);
 }
 
-@media print {
-  .page-header, .sidebar, .btn-wow, .inputs-section, .no-print {
+@media screen {
+  .print-only {
     display: none !important;
   }
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
   
-  body {
-    background: white;
+  body, html {
+    background: white !important;
+    margin: 0;
     padding: 0;
   }
-  
-  .container-center {
-    display: block !important;
-    max-width: 100% !important;
+
+  .print-only, .print-only * {
+    visibility: visible;
+  }
+
+  .print-only {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-width: 21cm; /* A4 width */
+    margin: 0 auto;
+    padding: 2cm;
+    box-sizing: border-box;
+    font-size: 11pt;
+    color: black !important;
   }
   
-  .card {
-    box-shadow: none !important;
-    border: 1px solid #eee !important;
-    break-inside: avoid;
+  .print-only-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 2rem;
   }
   
-  .summary-section {
-    position: static !important;
-    width: 100% !important;
+  .print-only-table th, .print-only-table td {
+    border-bottom: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
   }
 }
