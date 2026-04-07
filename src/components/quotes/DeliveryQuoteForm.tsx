@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Truck, MapPin, Clock, Fuel, Calculator, ChevronRight, ShieldCheck, Navigation, DollarSign, AlertTriangle, Info, Loader2 } from 'lucide-react';
+import { Truck, MapPin, Clock, Fuel, Calculator, ChevronRight, ShieldCheck, Navigation, DollarSign, Euro, AlertTriangle, Info, Loader2 } from 'lucide-react';
 import { calculateDeliveryQuote, DeliveryQuoteInput, DeliveryQuoteResult } from '@/services/quoteCalculators';
 import { createDeliveryQuote } from '@/app/actions/quotes';
 
@@ -157,22 +157,22 @@ export default function DeliveryQuoteForm({ clients, defaultSettings }: Delivery
 
               <div>
                 <label className="label-modern">Distance (km)</label>
-                <input name="distance" type="number" className="input-modern" placeholder="0" min="0" value={formData.distance || ''} onChange={handleChange} />
+                <input name="distance" type="number" className="input-modern" placeholder="0" min="0" value={formData.distance || ''} onChange={handleChange} onFocus={e => e.target.select()} />
               </div>
 
               <div>
                 <label className="label-modern">Durée de trajet (h)</label>
                 <div style={{ position: 'relative' }}>
                   <Clock size={16} style={{ position: 'absolute', left: '14px', top: '14px', color: 'var(--text-muted)' }} />
-                  <input name="duration" type="number" className="input-modern" placeholder="0" step="0.5" value={formData.duration || ''} onChange={handleChange} style={{ paddingLeft: '40px' }} />
+                  <input name="duration" type="number" className="input-modern" placeholder="0" step="0.5" value={formData.duration || ''} onChange={handleChange} onFocus={e => e.target.select()} style={{ paddingLeft: '40px' }} />
                 </div>
               </div>
 
               <div>
                 <label className="label-modern">Péages estimés (€)</label>
                 <div style={{ position: 'relative' }}>
-                  <DollarSign size={16} style={{ position: 'absolute', left: '14px', top: '14px', color: 'var(--text-muted)' }} />
-                  <input name="tolls" type="number" className="input-modern" placeholder="0" value={formData.tolls || ''} onChange={handleChange} style={{ paddingLeft: '40px' }} />
+                  <Euro size={16} style={{ position: 'absolute', left: '14px', top: '14px', color: 'var(--text-muted)' }} />
+                  <input name="tolls" type="number" className="input-modern" placeholder="0" value={formData.tolls || ''} onChange={handleChange} onFocus={e => e.target.select()} style={{ paddingLeft: '40px' }} />
                 </div>
               </div>
 
@@ -204,15 +204,15 @@ export default function DeliveryQuoteForm({ clients, defaultSettings }: Delivery
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px', marginBottom: '16px' }}>
               <div>
                 <label className="label-modern">Km véhicule</label>
-                <input name="vehicleKm" type="number" className="input-modern" placeholder="Ex: 80000" value={formData.vehicleKm || ''} onChange={handleChange} style={{ background: '#f0f9ff' }} />
+                <input name="vehicleKm" type="number" className="input-modern" placeholder="Ex: 80000" value={formData.vehicleKm || ''} onChange={handleChange} onFocus={e => e.target.select()} style={{ background: '#f0f9ff' }} />
               </div>
               <div>
                 <label className="label-modern">Conso (L/100)</label>
-                <input name="fuelConsumption" type="number" step="0.1" className="input-modern" value={formData.fuelConsumption || ''} onChange={handleChange} />
+                <input name="fuelConsumption" type="number" step="0.1" className="input-modern" placeholder="0" value={formData.fuelConsumption || ''} onChange={handleChange} onFocus={e => e.target.select()} />
               </div>
               <div>
                 <label className="label-modern">Carburant (€/L)</label>
-                <input name="fuelPrice" type="number" step="0.01" className="input-modern" value={formData.fuelPrice || ''} onChange={handleChange} />
+                <input name="fuelPrice" type="number" step="0.01" className="input-modern" placeholder="0.00" value={formData.fuelPrice || ''} onChange={handleChange} onFocus={e => e.target.select()} />
               </div>
               <div>
                 <label className="label-modern" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -278,30 +278,30 @@ export default function DeliveryQuoteForm({ clients, defaultSettings }: Delivery
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginTop: '20px' }}>
                 <div>
                   <label className="label-modern">Taux déplacement (€/h)</label>
-                  <input name="travelHourlyRate" type="number" step="1" className="input-modern" value={formData.travelHourlyRate || ''} onChange={handleChange} />
+                  <input name="travelHourlyRate" type="number" step="1" className="input-modern" placeholder="0" value={formData.travelHourlyRate || ''} onChange={handleChange} onFocus={e => e.target.select()} />
                   <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px' }}>Taux horaire conducteur/déplacement</p>
                 </div>
                 <div>
                   <label className="label-modern">Coeff. temps trajet</label>
-                  <input name="travelTimeCoeff" type="number" step="0.05" min="0" max="1" className="input-modern" value={formData.travelTimeCoeff || ''} onChange={handleChange} />
+                  <input name="travelTimeCoeff" type="number" step="0.05" min="0" max="1" className="input-modern" placeholder="0" value={formData.travelTimeCoeff || ''} onChange={handleChange} onFocus={e => e.target.select()} />
                   <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px' }}>0,5 = 50% du taux (recommandé)</p>
                 </div>
                 <div>
                   <label className="label-modern">Taux majoration nuit/WE (%)</label>
-                  <input name="hardshipRate" type="number" step="5" min="0" max="100" className="input-modern" value={formData.hardshipRate || ''} onChange={handleChange} />
+                  <input name="hardshipRate" type="number" step="5" min="0" max="100" className="input-modern" placeholder="0" value={formData.hardshipRate || ''} onChange={handleChange} onFocus={e => e.target.select()} />
                   <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px' }}>Appliqué sur le temps de trajet seul</p>
                 </div>
                 <div>
                   <label className="label-modern">Base véhicule (€/km)</label>
-                  <input name="baseCostPerKm" type="number" step="0.01" min="0" className="input-modern" value={formData.baseCostPerKm || ''} onChange={handleChange} />
+                  <input name="baseCostPerKm" type="number" step="0.01" min="0" className="input-modern" placeholder="0" value={formData.baseCostPerKm || ''} onChange={handleChange} onFocus={e => e.target.select()} />
                 </div>
                 <div>
                   <label className="label-modern">Forfait minimum (€)</label>
-                  <input name="minForfait" type="number" step="5" min="0" className="input-modern" value={formData.minForfait || ''} onChange={handleChange} />
+                  <input name="minForfait" type="number" step="5" min="0" className="input-modern" placeholder="0" value={formData.minForfait || ''} onChange={handleChange} onFocus={e => e.target.select()} />
                 </div>
                 <div>
                   <label className="label-modern">Nb animaux</label>
-                  <input name="animalCount" type="number" step="1" min="1" className="input-modern" value={formData.animalCount || ''} onChange={handleChange} />
+                  <input name="animalCount" type="number" step="1" min="1" className="input-modern" placeholder="1" value={formData.animalCount || ''} onChange={handleChange} onFocus={e => e.target.select()} />
                 </div>
               </div>
             )}
