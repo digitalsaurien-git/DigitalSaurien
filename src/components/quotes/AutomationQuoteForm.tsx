@@ -190,9 +190,20 @@ export default function AutomationQuoteForm({ clients, defaultSettings }: Automa
       {/* Summary / Result Area */}
       <div className="summary-section" style={{ position: 'sticky', top: '20px' }}>
         <div className="card shadow-premium" style={{ border: '2px solid #7c3aed', background: 'linear-gradient(135deg, #ffffff, #fafaff)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-             <Calculator size={24} color="#7c3aed" />
-             <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>Synthèse Business</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+               <Calculator size={24} color="#7c3aed" />
+               <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>Synthèse Business</h3>
+             </div>
+             {result && (
+               <button 
+                onClick={() => window.print()} 
+                className="btn btn-secondary no-print"
+                style={{ fontSize: '0.75rem', padding: '6px 10px' }}
+               >
+                 Générer PDF
+               </button>
+             )}
           </div>
 
           {!result || formData.baseHours <= 0 ? (

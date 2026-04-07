@@ -110,7 +110,7 @@ export default function DeliveryQuoteForm({ clients, defaultSettings }: Delivery
       <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 'var(--spacing-xl)', alignItems: 'start', marginTop: 'var(--spacing-lg)' }}>
 
         {/* ── Gauche : Formulaire ── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
+        <div className="inputs-section" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
 
           {/* Bloc 1 : Trajet */}
           <div className="card" style={{ borderTop: '4px solid var(--accent)' }}>
@@ -309,11 +309,22 @@ export default function DeliveryQuoteForm({ clients, defaultSettings }: Delivery
         </div>
 
         {/* ── Droite : Résultat ── */}
-        <div style={{ position: 'sticky', top: '20px' }}>
+        <div className="summary-section" style={{ position: 'sticky', top: '20px' }}>
           <div className="card glass" style={{ border: '2px solid var(--accent)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-              <Calculator size={28} color="var(--accent)" />
-              <h3 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0 }}>Récapitulatif</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Calculator size={28} color="var(--accent)" />
+                <h3 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0 }}>Récapitulatif</h3>
+              </div>
+              {result && (
+                <button 
+                  onClick={() => window.print()}
+                  className="btn btn-secondary no-print"
+                  style={{ padding: '8px 12px', fontSize: '0.75rem' }}
+                >
+                  Générer PDF
+                </button>
+              )}
             </div>
 
             {!result ? (

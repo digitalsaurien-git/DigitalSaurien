@@ -17,6 +17,7 @@ export async function createDeliveryQuote(data: {
   animalCount: number;
   fuelPrice: number;
 }) {
+  console.log("Creating Delivery Quote for client:", data.clientId);
   try {
     const quote = await prisma.quote.create({
       data: {
@@ -41,11 +42,12 @@ export async function createDeliveryQuote(data: {
       }
     });
 
+    console.log("Success! Created Delivery Quote ID:", quote.id);
     revalidatePath("/dashboard");
     return { success: true, id: quote.id };
   } catch (error) {
-    console.error("Failed to create delivery quote:", error);
-    return { success: false, error: "Erreur lors de la sauvegarde du devis." };
+    console.error("CRITICAL error in createDeliveryQuote:", error);
+    return { success: false, error: `Erreur technique : ${error instanceof Error ? error.message : "Inconnue"}` };
   }
 }
 
@@ -63,6 +65,7 @@ export async function createAutomationQuote(data: {
   hasDatabase: boolean;
   hasMaintenance: boolean;
 }) {
+  console.log("Creating Automation Quote for client:", data.clientId);
   try {
     const quote = await prisma.quote.create({
       data: {
@@ -87,10 +90,11 @@ export async function createAutomationQuote(data: {
       }
     });
 
+    console.log("Success! Created Automation Quote ID:", quote.id);
     revalidatePath("/dashboard");
     return { success: true, id: quote.id };
   } catch (error) {
-    console.error("Failed to create automation quote:", error);
-    return { success: false, error: "Erreur lors de la sauvegarde du devis." };
+    console.error("CRITICAL error in createAutomationQuote:", error);
+    return { success: false, error: `Erreur technique : ${error instanceof Error ? error.message : "Inconnue"}` };
   }
 }

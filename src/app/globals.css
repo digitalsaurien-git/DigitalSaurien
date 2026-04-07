@@ -166,3 +166,30 @@ body {
   margin: 0 auto;
   padding: 0 var(--spacing-md);
 }
+
+@media print {
+  .page-header, .sidebar, .btn-wow, .inputs-section, .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white;
+    padding: 0;
+  }
+  
+  .container-center {
+    display: block !important;
+    max-width: 100% !important;
+  }
+  
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #eee !important;
+    break-inside: avoid;
+  }
+  
+  .summary-section {
+    position: static !important;
+    width: 100% !important;
+  }
+}
