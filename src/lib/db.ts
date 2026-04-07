@@ -8,11 +8,22 @@ dotenv.config()
  * Standard SQLite Initialization
  */
 
+import path from 'path';
+
 const prismaClientSingleton = () => {
+  let dbUrl = process.env.DATABASE_URL;
+  if (dbUrl && dbUrl.startsWith('file:./')) {
+    const dbPath = path.join(process.cwd(), dbUrl.replace('file:./', '')).replace(/\\/g, '/');
+    dbUrl = `file:${dbPath}`;
+  } else if (!dbUrl) {
+    const dbPath = path.join(process.cwd(), 'dev.db').replace(/\\/g, '/');
+    dbUrl = `file:${dbPath}`;
+  }
+
   return new PrismaClient({
     datasources: {
       db: {
-        url: process.env.DATABASE_URL || "file:./dev.db"
+        url: dbUrl
       }
     },
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
