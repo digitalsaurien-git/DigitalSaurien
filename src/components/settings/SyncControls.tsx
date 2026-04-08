@@ -40,7 +40,11 @@ export function SyncControls() {
   const [syncPath, setSyncPath] = useState('DigitalSaurien/AUTOMATE/DigitalSaurien');
   const [isAutoSync, setIsAutoSync] = useState(true);
 
+  const [showDiag, setShowDiag] = useState(false);
+  const [diagUrl, setDiagUrl] = useState('');
+
   useEffect(() => {
+    if (typeof window !== 'undefined') setDiagUrl(window.location.origin);
     const savedAutoSync = localStorage.getItem('ds_auto_sync');
     if (savedAutoSync !== null) setIsAutoSync(savedAutoSync === 'true');
     const savedPath = localStorage.getItem('ds_sync_path');
@@ -154,15 +158,24 @@ export function SyncControls() {
 
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
         {!isAuthed ? (
-          <button
-            onClick={handleAuth}
-            disabled={!isInited || isLoading}
-            className="btn-wow"
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px', borderRadius: 'var(--radius-md)', opacity: (!isInited || isLoading) ? 0.6 : 1 }}
-          >
-            {isLoading ? <Loader size={16} className="spin" /> : <Cloud size={16} />}
-            {isLoading ? 'Connexion...' : 'Se connecter à Google Drive'}
-          </button>
+          <>
+            <button
+              onClick={handleAuth}
+              disabled={!isInited || isLoading}
+              className="btn-wow"
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px', borderRadius: 'var(--radius-md)', opacity: (!isInited || isLoading) ? 0.6 : 1 }}
+            >
+              {isLoading ? <Loader size={16} className="spin" /> : <Cloud size={16} />}
+              {isLoading ? 'Connexion...' : 'Se connecter à Google Drive'}
+            </button>
+            <button
+              onClick={(e) => { e.preventDefault(); setShowDiag(true); }}
+              style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--error)', color: 'var(--error)', display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 20px', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontWeight: 600 }}
+            >
+              <AlertCircle size={16} />
+              Diagnostiquer Erreur 400
+            </button>
+          </>
         ) : (
           <>
             <button
@@ -225,6 +238,43 @@ export function SyncControls() {
         <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '12px' }}>
           ⏳ Initialisation de la bibliothèque Google en cours...
         </p>
+      )}
+
+      {/* Diagnostic Modal */}
+      {showDiag && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setShowDiag(false)}>
+          <div style={{ background: 'var(--bg-card)', padding: '30px', borderRadius: '12px', maxWidth: '500px', width: '100%', border: '1px solid var(--border)' }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--error)', marginTop: 0 }}>
+              <AlertCircle size={24} /> Erreur 400 : Accès Bloqué
+            </h2>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: 1.6 }}>
+              L'erreur "Redirect URI Mismatch" ou "Access blocked" survient quand l'URL actuelle n'est pas autorisée dans votre console Google Cloud.
+            </p>
+            
+            <div style={{ background: 'var(--bg-glass)', padding: '15px', borderRadius: '8px', margin: '20px 0' }}>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '5px' }}>URL EXACTE à rajouter dans "Origines JavaScript autorisées" :</p>
+              <code style={{ display: 'block', background: 'rgba(0,0,0,0.3)', padding: '10px', borderRadius: '4px', color: '#10b981', userSelect: 'all', fontSize: '1.1rem', fontWeight: 'bold' }}>
+                {diagUrl}
+              </code>
+            </div>
+
+            <div style={{ background: 'var(--bg-glass)', padding: '15px', borderRadius: '8px', margin: '20px 0' }}>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '5px' }}>Client ID actuel envoyé à Google :</p>
+              <code style={{ display: 'block', background: 'rgba(0,0,0,0.3)', padding: '10px', borderRadius: '4px', color: 'var(--accent)', userSelect: 'all', wordBreak: 'break-all' }}>
+                {clientId}
+              </code>
+            </div>
+
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              Allez sur <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noreferrer" style={{ color: 'var(--accent)' }}>console.cloud.google.com/apis/credentials</a>, modifiez votre Client ID Web, ajoutez l'URL ci-dessus puis patientez 5 minutes avant de réessayer. 
+              Attention, Vercel génère de nouvelles URLs pour chaque déploiement (ex: *-username.vercel.app).
+            </p>
+
+            <button className="btn-wow" style={{ marginTop: '20px', width: '100%', padding: '12px' }} onClick={() => setShowDiag(false)}>
+              J'ai compris, fermer
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
