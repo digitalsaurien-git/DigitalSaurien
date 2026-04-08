@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Cloud, Upload, Download, CheckCircle, AlertCircle, Loader } from 'lucide-react';
-import { initGoogleDrive, authenticateGoogle, saveToDrive, loadFromDrive } from '@/utils/googleDrive';
+import { Cloud, Upload, Download, CheckCircle, AlertCircle, Loader, Info } from 'lucide-react';
+import { initGoogleDrive, authenticateGoogle, saveToDrive, loadFromDrive, resolvePath } from '@/utils/googleDrive';
 
 const KEYS = [
   'digitalsaurien_clients',
@@ -42,6 +42,45 @@ export function SyncControls() {
 
   const [showDiag, setShowDiag] = useState(false);
   const [diagUrl, setDiagUrl] = useState('');
+  const [diagResults, setDiagResults] = useState<{ step: string; status: 'pending' | 'ok' | 'error'; detail?: string }[]>([]);
+
+  const runDiagnostics = async () => {
+    setShowDiag(true);
+    const results: typeof diagResults = [];
+    const updateRes = (res: typeof diagResults) => setDiagResults([...res]);
+
+    results.push({ step: 'Initialisation GAPI & GIS', status: isInited ? 'ok' : 'error', detail: isInited ? undefined : 'Scripts introuvables' });
+    updateRes(results);
+    if (!isInited) return;
+
+    const token = (window as any).gapi?.client?.getToken();
+    results.push({ step: 'Jeton OAuth (Token)', status: token ? 'ok' : 'error', detail: token ? undefined : 'Aucun token valide trouvé' });
+    updateRes(results);
+    if (!token) return;
+
+    try {
+      results.push({ step: 'Ping API Drive', status: 'pending' });
+      updateRes(results);
+      const res = await (window as any).gapi.client.drive.about.get({ fields: 'user(displayName, emailAddress)' });
+      results[results.length - 1] = { step: 'Ping API Drive', status: 'ok', detail: `Connecté : ${res.result.user.emailAddress}` };
+      updateRes(results);
+    } catch (err: any) {
+      results[results.length - 1] = { step: 'Ping API Drive', status: 'error', detail: err?.result?.error?.message || 'Impossible de joindre Google Drive' };
+      updateRes(results);
+      return;
+    }
+
+    try {
+      results.push({ step: `Vérification du dossier`, status: 'pending' });
+      updateRes(results);
+      const targetId = await resolvePath(syncPath);
+      results[results.length - 1] = { step: `Vérification du dossier`, status: 'ok', detail: `Dossier validé (ID: ${targetId})` };
+      updateRes(results);
+    } catch (err: any) {
+      results[results.length - 1] = { step: `Vérification du dossier`, status: 'error', detail: err?.result?.error?.message || 'Dossier introuvable ou droits insuffisants' };
+      updateRes(results);
+    }
+  };
 
   useEffect(() => {
     if (typeof window !== 'undefined') setDiagUrl(window.location.origin);
@@ -158,24 +197,15 @@ export function SyncControls() {
 
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
         {!isAuthed ? (
-          <>
-            <button
-              onClick={handleAuth}
-              disabled={!isInited || isLoading}
-              className="btn-wow"
-              style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px', borderRadius: 'var(--radius-md)', opacity: (!isInited || isLoading) ? 0.6 : 1 }}
-            >
-              {isLoading ? <Loader size={16} className="spin" /> : <Cloud size={16} />}
-              {isLoading ? 'Connexion...' : 'Se connecter à Google Drive'}
-            </button>
-            <button
-              onClick={(e) => { e.preventDefault(); setShowDiag(true); }}
-              style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--error)', color: 'var(--error)', display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 20px', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontWeight: 600 }}
-            >
-              <AlertCircle size={16} />
-              Diagnostiquer Erreur 400
-            </button>
-          </>
+          <button
+            onClick={handleAuth}
+            disabled={!isInited || isLoading}
+            className="btn-wow"
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px', borderRadius: 'var(--radius-md)', opacity: (!isInited || isLoading) ? 0.6 : 1 }}
+          >
+            {isLoading ? <Loader size={16} className="spin" /> : <Cloud size={16} />}
+            {isLoading ? 'Connexion...' : 'Se connecter à Google Drive'}
+          </button>
         ) : (
           <>
             <button
@@ -207,6 +237,14 @@ export function SyncControls() {
             </button>
           </>
         )}
+
+        <button
+          onClick={(e) => { e.preventDefault(); runDiagnostics(); }}
+          style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid var(--accent)', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 20px', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontWeight: 600, marginLeft: 'auto' }}
+        >
+          <Info size={16} />
+          Diagnostic Complet
+        </button>
 
         {isAuthed && (
           <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-glass)', padding: '12px', borderRadius: 'var(--radius-sm)', marginTop: '8px' }}>
@@ -243,35 +281,35 @@ export function SyncControls() {
       {/* Diagnostic Modal */}
       {showDiag && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setShowDiag(false)}>
-          <div style={{ background: 'var(--bg-card)', padding: '30px', borderRadius: '12px', maxWidth: '500px', width: '100%', border: '1px solid var(--border)' }} onClick={e => e.stopPropagation()}>
-            <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--error)', marginTop: 0 }}>
-              <AlertCircle size={24} /> Erreur 400 : Accès Bloqué
+          <div style={{ background: 'var(--bg-card)', padding: '30px', borderRadius: '12px', maxWidth: '600px', width: '100%', border: '1px solid var(--border)', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--accent)', marginTop: 0 }}>
+              <Info size={24} /> Outil de Diagnostic Drive
             </h2>
             <p style={{ fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: 1.6 }}>
-              L'erreur "Redirect URI Mismatch" ou "Access blocked" survient quand l'URL actuelle n'est pas autorisée dans votre console Google Cloud.
+              Analysez la liaison avec Google Drive en temps réel pour détecter les erreurs (ID invalide, dossier manquant, problème CORS...).
             </p>
             
+            <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {diagResults.map((r, i) => (
+                <div key={i} style={{ padding: '12px', borderRadius: '8px', background: r.status === 'error' ? 'rgba(239, 68, 68, 0.1)' : r.status === 'ok' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255, 255, 255, 0.05)', borderLeft: `4px solid ${r.status === 'error' ? 'var(--error)' : r.status === 'ok' ? '#10b981' : 'var(--text-muted)'}` }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: 600, color: r.status === 'error' ? 'var(--error)' : r.status === 'ok' ? '#10b981' : 'var(--text-main)' }}>
+                    <span>{r.step}</span>
+                    {r.status === 'pending' ? <Loader size={16} className="spin" /> : r.status === 'ok' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
+                  </div>
+                  {r.detail && <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px', marginBottom: 0 }}>{r.detail}</p>}
+                </div>
+              ))}
+            </div>
+
             <div style={{ background: 'var(--bg-glass)', padding: '15px', borderRadius: '8px', margin: '20px 0' }}>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '5px' }}>URL EXACTE à rajouter dans "Origines JavaScript autorisées" :</p>
-              <code style={{ display: 'block', background: 'rgba(0,0,0,0.3)', padding: '10px', borderRadius: '4px', color: '#10b981', userSelect: 'all', fontSize: '1.1rem', fontWeight: 'bold' }}>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '5px' }}>URL à rajouter dans "Origines autorisées" (pour Erreur 400) :</p>
+              <code style={{ display: 'block', background: 'rgba(0,0,0,0.3)', padding: '10px', borderRadius: '4px', color: '#10b981', userSelect: 'all', fontSize: '0.95rem' }}>
                 {diagUrl}
               </code>
             </div>
 
-            <div style={{ background: 'var(--bg-glass)', padding: '15px', borderRadius: '8px', margin: '20px 0' }}>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '5px' }}>Client ID actuel envoyé à Google :</p>
-              <code style={{ display: 'block', background: 'rgba(0,0,0,0.3)', padding: '10px', borderRadius: '4px', color: 'var(--accent)', userSelect: 'all', wordBreak: 'break-all' }}>
-                {clientId}
-              </code>
-            </div>
-
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              Allez sur <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noreferrer" style={{ color: 'var(--accent)' }}>console.cloud.google.com/apis/credentials</a>, modifiez votre Client ID Web, ajoutez l'URL ci-dessus puis patientez 5 minutes avant de réessayer. 
-              Attention, Vercel génère de nouvelles URLs pour chaque déploiement (ex: *-username.vercel.app).
-            </p>
-
-            <button className="btn-wow" style={{ marginTop: '20px', width: '100%', padding: '12px' }} onClick={() => setShowDiag(false)}>
-              J'ai compris, fermer
+            <button className="btn-wow" style={{ marginTop: '10px', width: '100%', padding: '12px' }} onClick={() => setShowDiag(false)}>
+              Fermer le diagnostic
             </button>
           </div>
         </div>
