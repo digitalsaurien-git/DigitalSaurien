@@ -36,8 +36,19 @@ export function SyncControls() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [lastSync, setLastSync] = useState<string | null>(null);
 
+  const [clientId, setClientId] = useState('867619813314-h3gf1ro6fn1ddotkttso119lbiphi2rv.apps.googleusercontent.com');
+  const [syncPath, setSyncPath] = useState('DigitalSaurien/AUTOMATE/DigitalSaurien');
+  const [isAutoSync, setIsAutoSync] = useState(true);
+
   useEffect(() => {
-    initGoogleDrive().then(res => setIsInited(!!res));
+    const savedAutoSync = localStorage.getItem('ds_auto_sync');
+    if (savedAutoSync !== null) setIsAutoSync(savedAutoSync === 'true');
+    const savedPath = localStorage.getItem('ds_sync_path');
+    if (savedPath) setSyncPath(savedPath);
+    const savedClientId = localStorage.getItem('ds_client_id');
+    if (savedClientId) setClientId(savedClientId);
+
+    initGoogleDrive(savedClientId || undefined).then(res => setIsInited(!!res));
     const ls = localStorage.getItem('digitalsaurien_last_sync');
     if (ls) setLastSync(ls);
   }, []);
@@ -58,7 +69,7 @@ export function SyncControls() {
     try {
       setStatus('loading');
       const data = getAllLocalData();
-      const res = await saveToDrive(data);
+      const res = await saveToDrive(data, syncPath);
       if (res) {
         const ts = new Date().toLocaleString('fr-FR');
         setLastSync(ts);
@@ -79,7 +90,7 @@ export function SyncControls() {
     if (!confirm('⚠️ Cela va écraser vos données locales par celles du Drive. Continuer ?')) return;
     try {
       setStatus('loading');
-      const data = await loadFromDrive();
+      const data = await loadFromDrive(syncPath);
       if (data) {
         restoreAllLocalData(data);
         setStatus('success');
@@ -111,6 +122,34 @@ export function SyncControls() {
             Dernière synchro : {lastSync}
           </span>
         )}
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div>
+          <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '5px', display: 'block' }}>Chemin ou ID Google Drive</label>
+          <input 
+            className="input-modern" 
+            value={syncPath} 
+            onChange={e => { setSyncPath(e.target.value); localStorage.setItem('ds_sync_path', e.target.value); }} 
+            placeholder="DigitalSaurien/AUTOMATE/DigitalSaurien"
+          />
+        </div>
+        <div>
+          <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '5px', display: 'block' }}>Client ID OAuth</label>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <input 
+              className="input-modern" 
+              value={clientId} 
+              onChange={e => setClientId(e.target.value)} 
+            />
+            <button className="btn-wow" style={{ fontSize: '0.8rem', padding: '8px 16px' }} onClick={() => {
+              localStorage.setItem('ds_client_id', clientId);
+              initGoogleDrive(clientId);
+              setIsInited(false);
+              setIsAuthed(false);
+            }}>Appliquer</button>
+          </div>
+        </div>
       </div>
 
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -154,6 +193,19 @@ export function SyncControls() {
               Restaurer depuis Drive
             </button>
           </>
+        )}
+
+        {isAuthed && (
+          <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-glass)', padding: '12px', borderRadius: 'var(--radius-sm)', marginTop: '8px' }}>
+            <div>
+              <span style={{ fontSize: '0.9rem', display: 'block', fontWeight: 600 }}>Synchronisation automatique</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Sauvegarde automatiquement en tâche de fond.</span>
+            </div>
+            <input type="checkbox" checked={isAutoSync} onChange={(e) => {
+              setIsAutoSync(e.target.checked);
+              localStorage.setItem('ds_auto_sync', String(e.target.checked));
+            }} style={{ width: '20px', height: '20px', cursor: 'pointer' }} />
+          </div>
         )}
 
         {/* Status feedback */}

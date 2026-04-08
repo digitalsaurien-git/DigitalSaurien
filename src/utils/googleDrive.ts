@@ -27,8 +27,9 @@ function waitForScripts(): Promise<void> {
 }
 
 // Initialize the GAPI and GIS libraries
-export async function initGoogleDrive(): Promise<boolean> {
-  if (!CLIENT_ID || typeof window === 'undefined') return false;
+export async function initGoogleDrive(overrideClientId?: string): Promise<boolean> {
+  const activeClientId = overrideClientId || CLIENT_ID;
+  if (!activeClientId || typeof window === 'undefined') return false;
   
   await waitForScripts();
   console.log("🛠️ Scripts Google détectés, initialisation...");
@@ -37,7 +38,7 @@ export async function initGoogleDrive(): Promise<boolean> {
     (window as any).gapi.load('client', async () => {
       try {
         await (window as any).gapi.client.init({
-          clientId: CLIENT_ID,
+          clientId: activeClientId,
           discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
         });
         gapiInited = true;
@@ -48,7 +49,7 @@ export async function initGoogleDrive(): Promise<boolean> {
     });
 
     tokenClient = (window as any).google.accounts.oauth2.initTokenClient({
-      client_id: CLIENT_ID,
+      client_id: activeClientId,
       scope: SCOPES,
       callback: '', // defined later for auth
     });
