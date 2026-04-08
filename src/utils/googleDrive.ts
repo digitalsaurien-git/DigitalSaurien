@@ -107,11 +107,12 @@ async function getOrCreateFolder(name: string, parentId = 'root'): Promise<strin
 
 // Helper to resolve a full path (e.g. "DigitalSaurien/AUTOMATE/DigitalSaurien")
 export async function resolvePath(pathString: string): Promise<string> {
-  const folders = pathString.split('/').filter(f => f.length > 0);
-  if (folders.length === 1 && folders[0].length > 25 && !folders[0].includes(' ')) {
-    console.log(`🔗 [Drive] Utilisation directe de l'ID fourni: ${folders[0]}`);
-    return folders[0];
+  pathString = pathString.trim();
+  if (!pathString.includes('/') && pathString.length > 20) {
+    console.log(`🔗 [Drive] Utilisation directe de l'ID fourni: ${pathString}`);
+    return pathString;
   }
+  const folders = pathString.split('/').filter(f => f.length > 0);
 
   let currentId = 'root';
 

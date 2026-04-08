@@ -173,7 +173,7 @@ export function SyncControls() {
           <input 
             className="input-modern" 
             value={syncPath} 
-            onChange={e => { setSyncPath(e.target.value); localStorage.setItem('ds_sync_path', e.target.value); }} 
+            onChange={e => { setSyncPath(e.target.value.trim()); localStorage.setItem('ds_sync_path', e.target.value.trim()); }} 
             placeholder="DigitalSaurien/AUTOMATE/DigitalSaurien"
           />
         </div>
@@ -183,7 +183,7 @@ export function SyncControls() {
             <input 
               className="input-modern" 
               value={clientId} 
-              onChange={e => setClientId(e.target.value)} 
+              onChange={e => setClientId(e.target.value.trim())} 
             />
             <button className="btn-wow" style={{ fontSize: '0.8rem', padding: '8px 16px' }} onClick={() => {
               localStorage.setItem('ds_client_id', clientId);
